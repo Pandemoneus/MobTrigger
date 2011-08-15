@@ -31,12 +31,12 @@ Aliases: /mobtrigger /mt
 /mt cuboid save (String cuboidName) - Saves a selected cuboid under the specified name			
 /mt cuboid info (String cuboidName) - Shows information about the specified cuboid		
 /mt trigger create (int triggerID) (String cuboidName) (double firstDelay) (boolean isSelfTrigging) (double selfTriggerDelay) (int totalTimes) - Creates a trigger. Parameters:		
-* triggerID - the ID of the trigger, using an already existing ID will overwrite that trigger
-* cuboidName - the name of the cuboid the mobs will spawn in (see /mt cuboid save)
-* firstDelay - the delay in seconds after which the trigger will fire the first time
-* isSelfTriggering - determines whether the trigger executes itself again after it was first fired
-* selfTriggerDelay - the delay in seconds after which it will execute itself again
-* totalTimes - the total amount of times the trigger can be executed before it needs to be reset
+*   triggerID - the ID of the trigger, using an already existing ID will overwrite that trigger		
+*   cuboidName - the name of the cuboid the mobs will spawn in (see /mt cuboid save)
+*   firstDelay - the delay in seconds after which the trigger will fire the first time
+*   isSelfTriggering - determines whether the trigger executes itself again after it was first fired
+*   selfTriggerDelay - the delay in seconds after which it will execute itself again
+*   totalTimes - the total amount of times the trigger can be executed before it needs to be reset
 /mt trigger info - Shows information about the currently selected trigger		
 /mt trigger link (int triggerID) - Links a trigger block to a trigger with the specified ID		
 /mt trigger unlink - Removes the link from the selected trigger block		
