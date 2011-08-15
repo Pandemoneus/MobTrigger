@@ -44,6 +44,19 @@ Aliases: /mobtrigger /mt
 /mt trigger showIDs - Shows a list of all triggers you own		
 /mt trigger set (int mobID|String mobName) (int amount) - Sets the amount of mobs spawned by the trigger
 
+Step by step guide on how to create your first trigger:
+-------------------------------------------------------
+1. Find a suitable place where you want mobs to spawn. Make sure your cuboid area does not have any blocks inside (or mobs might spawn inside them and suffocate).
+2. Type /mt select   (requires 'mobtrigger.trigger.select' permission)
+3. With a lever in your hand, mark the corners of the cuboid, by clicking once on the first, then on the second.
+4. Save your cuboid! Tpye /mt cuboid save MyFirstCuboid   (requires 'mobtrigger.trigger.cuboid.save' permission)
+5. Now search for the trigger block you want to use (either a lever, button, wooden/stone pressure plate).
+6. Click that block while NOT having a lever in your hand and still being in selection mode.
+7. You got everything that we need now! Now type /mt trigger create 0 MyFirstCuboid 0 false 0 1   (requires 'mobtrigger.trigger.create' permission)
+8. Now that we have created the trigger, we need to add mobs to it. Type /mt trigger set pig 3 to make 3 pigs spawn when we trigger it.  (requires 'mobtrigger.trigger.create' permission)
+9. And we are good to go! Type /mt select to exit the selection mode.
+10. Press the button/lever/pressure plate and see whether it works!   (requires 'mobtrigger.trigger.use' permission)
+
 Permission nodes:
 -----------------
     mobtrigger.*:
@@ -58,7 +71,7 @@ Permission nodes:
         description: Allows you to modify cuboids that do not belong to you
         default: op
     mobtrigger.trigger.*:
-        description: Gives access to all trigger related commands (no admin)
+        description: Gives access to all trigger related commands (excludes admin)
     mobtrigger.trigger.use:
         description: Allows you to use triggers
         default: true
@@ -75,7 +88,7 @@ Permission nodes:
         description: Allows you to view the mob IDs the plug-in uses
         default: op
     mobtrigger.trigger.cuboid.*:
-        description: Gives access to all trigger cuboid related commands (no admin)
+        description: Gives access to all trigger cuboid related commands (excludes admin)
     mobtrigger.trigger.cuboid.save:
         description: Allows you to save cuboids
         default: op
