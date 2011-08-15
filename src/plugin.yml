@@ -1,0 +1,70 @@
+name: MobTrigger
+main: ger.pandemoneus.mobTrigger.MobTrigger
+version: '1.00'
+author: 'Pandemoneus'
+softdepend: [Permissions]
+
+commands:
+    mobtrigger:
+        description: Shows the MobTrigger plug-in help
+        usage: |
+               /<command>
+    mt:
+        description: Shows the MobTrigger plug-in help
+        usage: |
+               /<command>
+               
+permissions:
+    mobtrigger.*:
+        description: Gives access to everything that the plug-in offers
+        children:
+            mobtrigger.admin.*: true
+            mobtrigger.trigger.*: true
+    mobtrigger.admin.*:
+        description: Enables you to modify everything that does not belong to you
+        default: op
+        children:
+            mobtrigger.admin.trigger: true
+            mobtrigger.admin.cuboid: true
+    mobtrigger.admin.trigger:
+        description: Allows you to modify triggers that do not belong to you
+        default: op
+    mobtrigger.admin.cuboid:
+        description: Allows you to modify cuboids that do not belong to you
+        default: op
+    mobtrigger.trigger.*:
+        description: Gives access to all trigger related commands (no admin)
+        children:
+            mobtrigger.trigger.use: true
+            mobtrigger.trigger.select: true
+            mobtrigger.trigger.create: true
+            mobtrigger.trigger.destroy: true
+            mobtrigger.trigger.reset: true
+            mottrigger.trigger.mobids: true
+            mobtrigger.trigger.cuboid.*: true
+    mobtrigger.trigger.use:
+        description: Allows you to use triggers
+        default: true
+    mobtrigger.trigger.select:
+        description: Allows you to select triggers and trigger areas
+        default: op
+    mobtrigger.trigger.create:
+        description: Allows you to create, link and reset triggers
+        default: op
+    mobtrigger.trigger.destroy:
+        description: Allows you to remove and unlink triggers
+        default: op
+    mottrigger.trigger.mobids:
+        description: Allows you to view the mob IDs the plug-in uses
+        default: op
+    mobtrigger.trigger.cuboid.*:
+        description: Gives access to all trigger cuboid related commands (no admin)
+        children:
+            mobtrigger.trigger.cuboid.save: true
+            mobtrigger.trigger.cuboid.info: true
+    mobtrigger.trigger.cuboid.save:
+        description: Allows you to save cuboids
+        default: op
+    mobtrigger.trigger.cuboid.info:
+        description: Allows you to get info about cuboids
+        default: op
