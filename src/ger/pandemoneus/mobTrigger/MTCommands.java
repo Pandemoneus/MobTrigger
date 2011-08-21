@@ -35,6 +35,7 @@ public final class MTCommands implements CommandExecutor {
 	private final String invalidArgs;
 	
 	private boolean permissionsFound = false;
+	private PermissionHandler ph = null;
 	
 	private final HashMap<Player, Integer> pageIndex = new HashMap<Player, Integer>();
 	private final HashMap<Player, Book> currentBook = new HashMap<Player, Book>();
@@ -55,6 +56,9 @@ public final class MTCommands implements CommandExecutor {
 		invalidArgs = chatPrefix + ChatColor.RED + "Too few or invalid arguments. Usage:";
 		
 		permissionsFound = plugin.getPermissionsFound();
+		if (permissionsFound) {
+			ph = plugin.getPermissionsHandler();
+		}
 	}
 
 	/**
@@ -64,11 +68,7 @@ public final class MTCommands implements CommandExecutor {
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 		if (args != null) {
 			if (sender instanceof Player) {
-				if (permissionsFound) {
-					usePermissionsStructure((Player) sender, cmd, commandLabel, args);
-				} else {
-					useBukkitPermStructure((Player) sender, cmd, commandLabel, args);
-				}
+				determineCommand((Player) sender, cmd, commandLabel, args);
 			} else {
 				sender.sendMessage(chatPrefix + ChatColor.RED + "Sorry, you are not a player!");
 			}
@@ -77,13 +77,12 @@ public final class MTCommands implements CommandExecutor {
 		return true;
 	}
 
-	private void usePermissionsStructure(Player sender, Command cmd, String commandLabel, String[] args) {
-		final PermissionHandler ph = plugin.getPermissionsHandler();
+	private void determineCommand(Player sender, Command cmd, String commandLabel, String[] args) {
 		final int n = args.length;
 		
 		if (n == 0) {
 			// show help
-			if (ph.has(sender, pluginName.toLowerCase() + ".help")) {
+			if (hasPerm(sender, ".help")) {
 				showHelp(sender);
 			} else {
 				sender.sendMessage(notAuthorized);
@@ -93,14 +92,14 @@ public final class MTCommands implements CommandExecutor {
 
 			if (command.equalsIgnoreCase("select")) {
 				// select
-				if (ph.has(sender, pluginName.toLowerCase() + ".trigger.select")) {
+				if (hasPerm(sender, ".trigger.select")) {
 					select(sender);
 				} else {
 					sender.sendMessage(notAuthorized);
 				}
 			} else if (command.equalsIgnoreCase("mobids")) {
 				// mobIDs
-				if (ph.has(sender, pluginName.toLowerCase() + ".trigger.showmobids")) {
+				if (hasPerm(sender, ".trigger.showmobids")) {
 					showMobIDs(sender);
 				} else {
 					sender.sendMessage(notAuthorized);
@@ -112,7 +111,7 @@ public final class MTCommands implements CommandExecutor {
 					if (addenum.equalsIgnoreCase("save")) {
 						if (n >= 3 && argsValid(args)) {
 							// save
-							if (ph.has(sender, pluginName.toLowerCase() + ".trigger.cuboid.save")) {
+							if (hasPerm(sender, ".trigger.cuboid.save")) {
 								saveCuboid(sender, args[2]);
 							} else {
 								sender.sendMessage(notAuthorized);
@@ -123,7 +122,7 @@ public final class MTCommands implements CommandExecutor {
 					} else if (addenum.equalsIgnoreCase("info")) {
 						if (n >= 3 && argsValid(args)) {
 							// info
-							if (ph.has(sender, pluginName.toLowerCase() + ".trigger.cuboid.info")) {
+							if (hasPerm(sender, ".trigger.cuboid.info")) {
 								infoCuboid(sender, args[2]);
 							} else {
 								sender.sendMessage(notAuthorized);
@@ -144,7 +143,7 @@ public final class MTCommands implements CommandExecutor {
 					if (addenum.equalsIgnoreCase("create")) {	
 						if (n >= 8 && argsValid(args)) {
 							// create
-							if (ph.has(sender, pluginName.toLowerCase() + ".trigger.create")) {
+							if (hasPerm(sender, ".trigger.create")) {
 								createTrigger(sender, args[2], args[3], args[4], args[5], args[6], args[7]);
 							} else {
 								sender.sendMessage(notAuthorized);
@@ -154,7 +153,7 @@ public final class MTCommands implements CommandExecutor {
 						}	
 					} else if (addenum.equalsIgnoreCase("info")) {
 						//info
-						if (ph.has(sender, pluginName.toLowerCase() + ".trigger.info")) {
+						if (hasPerm(sender, ".trigger.info")) {
 							infoTrigger(sender);
 						} else {
 							sender.sendMessage(notAuthorized);
@@ -162,7 +161,7 @@ public final class MTCommands implements CommandExecutor {
 					} else if (addenum.equalsIgnoreCase("set")) {	
 						if (n >= 4 && argsValid(args)) {
 							// set
-							if (ph.has(sender, pluginName.toLowerCase() + ".trigger.create")) {
+							if (hasPerm(sender, ".trigger.create")) {
 								setMobAmount(sender, args[2], args[3]);
 							} else {
 								sender.sendMessage(notAuthorized);
@@ -173,7 +172,7 @@ public final class MTCommands implements CommandExecutor {
 					} else if (addenum.equalsIgnoreCase("link")) {	
 						if (n >= 3 && argsValid(args)) {
 							// link
-							if (ph.has(sender, pluginName.toLowerCase() + ".trigger.create")) {
+							if (hasPerm(sender, ".trigger.create")) {
 								linkTrigger(sender, args[2]);
 							} else {
 								sender.sendMessage(notAuthorized);
@@ -183,7 +182,7 @@ public final class MTCommands implements CommandExecutor {
 						}	
 					} else if (addenum.equalsIgnoreCase("unlink")) {	
 						// unlink
-						if (ph.has(sender, pluginName.toLowerCase() + ".trigger.destroy")) {
+						if (hasPerm(sender, ".trigger.destroy")) {
 							unlinkTrigger(sender);
 						} else {
 							sender.sendMessage(notAuthorized);
@@ -191,7 +190,7 @@ public final class MTCommands implements CommandExecutor {
 					} else if (addenum.equalsIgnoreCase("reset")) {	
 						if (n >= 3 && argsValid(args)) {
 							// reset
-							if (ph.has(sender, pluginName.toLowerCase() + ".trigger.reset")) {
+							if (hasPerm(sender, ".trigger.reset")) {
 								resetTrigger(sender, args[2]);
 							} else {
 								sender.sendMessage(notAuthorized);
@@ -201,145 +200,7 @@ public final class MTCommands implements CommandExecutor {
 						}	
 					} else if (addenum.equalsIgnoreCase("showids")) {	
 						// show TriggerIDs
-						if (ph.has(sender, pluginName.toLowerCase() + ".trigger.info")) {
-							showTriggerIDs(sender);
-						} else {
-							sender.sendMessage(notAuthorized);
-						}
-					} else {
-						showInvalidArgsMsg(sender, "trigger (create|info|link|reset|set|showIDs|unlink)");
-					}
-				} else {
-					showInvalidArgsMsg(sender, "trigger (create|info|link|reset|set|showIDs|unlink)");
-				}
-			}
-		}
-	}
-
-	private void useBukkitPermStructure(Player sender, Command cmd, String commandLabel, String[] args) {
-		final int n = args.length;
-		
-		if (n == 0) {
-			// show help
-			if (sender.hasPermission(pluginName.toLowerCase() + ".help")) {
-				showHelp(sender);
-			} else {
-				sender.sendMessage(notAuthorized);
-			}
-		} else {
-			String command = args[0];
-
-			if (command.equalsIgnoreCase("select")) {
-				// select
-				if (sender.hasPermission(pluginName.toLowerCase() + ".trigger.select")) {
-					select(sender);
-				} else {
-					sender.sendMessage(notAuthorized);
-				}
-			} else if (command.equalsIgnoreCase("mobids")) {
-				// mobIDs
-				if (sender.hasPermission(pluginName.toLowerCase() + ".trigger.showmobids")) {
-					showMobIDs(sender);
-				} else {
-					sender.sendMessage(notAuthorized);
-				}
-			} else if (command.equalsIgnoreCase("cuboid") && n >= 2) {
-				String addenum = args[1];
-				// cuboid
-				if (addenum != null) {
-					if (addenum.equalsIgnoreCase("save")) {
-						if (n >= 3 && argsValid(args)) {
-							// save
-							if (sender.hasPermission(pluginName.toLowerCase() + ".trigger.cuboid.save")) {
-								saveCuboid(sender, args[2]);
-							} else {
-								sender.sendMessage(notAuthorized);
-							}
-						} else {
-							showInvalidArgsMsg(sender, new String[]{"cuboid save", "(cuboidName - the Cuboid name for further references)"});
-						}
-					} else if (addenum.equalsIgnoreCase("info")) {
-						if (n >= 3 && argsValid(args)) {
-							// info
-							if (sender.hasPermission(pluginName.toLowerCase() + ".trigger.cuboid.info")) {
-								infoCuboid(sender, args[2]);
-							} else {
-								sender.sendMessage(notAuthorized);
-							}
-						} else {
-							showInvalidArgsMsg(sender, new String[]{"cuboid info", "(String cuboidName - the Cuboid name)"});
-						}
-					} else {
-						showInvalidArgsMsg(sender, "cuboid (save|info)");
-					}
-				} else {
-					showInvalidArgsMsg(sender, "cuboid (save|info)");
-				}
-			} else if (command.equalsIgnoreCase("trigger") && n >= 2) {
-				String addenum = args[1];
-				// trigger
-				if (addenum != null) {
-					if (addenum.equalsIgnoreCase("create")) {	
-						if (n >= 8 && argsValid(args)) {
-							// create
-							if (sender.hasPermission(pluginName.toLowerCase() + ".trigger.create")) {
-								createTrigger(sender, args[2], args[3], args[4], args[5], args[6], args[7]);
-							} else {
-								sender.sendMessage(notAuthorized);
-							}
-						} else {
-							showInvalidArgsMsg(sender, new String[]{"trigger create", "(int triggerID)", "(String cuboidName)", "(double firstDelay - delay in seconds after which the trigger is first fired)", "(boolean isSelfTrigging - determines whether the trigger executes itself after the first triggering)", "(double selfTriggerDelay - delay in seconds after which the trigger triggers itself again)", "(int totalTimes - the total times the trigger can fire)"});
-						}	
-					} else if (addenum.equalsIgnoreCase("info")) {
-						//info
-						if (sender.hasPermission(pluginName.toLowerCase() + ".trigger.info")) {
-							infoTrigger(sender);
-						} else {
-							sender.sendMessage(notAuthorized);
-						}
-					} else if (addenum.equalsIgnoreCase("set")) {	
-						if (n >= 4 && argsValid(args)) {
-							// set
-							if (sender.hasPermission(pluginName.toLowerCase() + ".trigger.create")) {
-								setMobAmount(sender, args[2], args[3]);
-							} else {
-								sender.sendMessage(notAuthorized);
-							}
-						} else {
-							showInvalidArgsMsg(sender, new String[]{"trigger set", "(String mobName|int mobID - the name or ID of the mob to set)", "(int amount)"});
-						}	
-					} else if (addenum.equalsIgnoreCase("link")) {	
-						if (n >= 3 && argsValid(args)) {
-							// link
-							if (sender.hasPermission(pluginName.toLowerCase() + ".trigger.create")) {
-								linkTrigger(sender, args[2]);
-							} else {
-								sender.sendMessage(notAuthorized);
-							}
-						} else {
-							showInvalidArgsMsg(sender, "trigger link (int triggerID - the ID of the trigger to link to)");
-						}	
-					} else if (addenum.equalsIgnoreCase("unlink")) {	
-						// unlink
-						if (sender.hasPermission(pluginName.toLowerCase() + ".trigger.destroy")) {
-							unlinkTrigger(sender);
-						} else {
-							sender.sendMessage(notAuthorized);
-						}
-					} else if (addenum.equalsIgnoreCase("reset")) {	
-						if (n >= 3 && argsValid(args)) {
-							// reset
-							if (sender.hasPermission(pluginName.toLowerCase() + ".trigger.reset")) {
-								resetTrigger(sender, args[2]);
-							} else {
-								sender.sendMessage(notAuthorized);
-							}
-						} else {
-							showInvalidArgsMsg(sender, new String[]{"trigger reset", "(int triggerID - the ID of the trigger to reset)"});
-						}	
-					} else if (addenum.equalsIgnoreCase("showids")) {	
-						// show TriggerIDs
-						if (sender.hasPermission(pluginName.toLowerCase() + ".trigger.info")) {
+						if (hasPerm(sender, ".trigger.info")) {
 							showTriggerIDs(sender);
 						} else {
 							sender.sendMessage(notAuthorized);
@@ -381,6 +242,11 @@ public final class MTCommands implements CommandExecutor {
 		}
 		
 		sender.sendMessage(chatPrefix + ChatColor.GOLD + "() - required, [] - optional");
+	}
+	
+	private boolean hasPerm(Player sender, String perm) {
+		return (permissionsFound && ph.has(sender, pluginName.toLowerCase() + perm)) || (sender.hasPermission(pluginName.toLowerCase() + perm));
+
 	}
 
 	private void select(Player sender) {
@@ -526,7 +392,7 @@ public final class MTCommands implements CommandExecutor {
 				final Trigger t = tc.getTriggerByID(id);
 				
 				if (t != null) {
-					if (t.getOwner().getName().equals(sender.getName()) || ((permissionsFound && plugin.getPermissionsHandler().has(sender, pluginName.toLowerCase() + ".admin.trigger")) || (sender.hasPermission(pluginName.toLowerCase() + ".admin.trigger")))) {
+					if (t.getOwner().getName().equals(sender.getName()) || hasPerm(sender, ".admin.trigger")) {
 						// remove old reference in case one exists
 						if (tc.getTrigger(selectedBlock) != null) {
 							tc.removeReferenceToTrigger(selectedBlock, tc.getTrigger(selectedBlock));
@@ -556,7 +422,7 @@ public final class MTCommands implements CommandExecutor {
 			final Trigger t = tc.getTrigger(selectedBlock);
 			
 			if (t != null) {
-				if (t.getOwner().getName().equals(sender.getName()) || ((permissionsFound && plugin.getPermissionsHandler().has(sender, pluginName.toLowerCase() + ".admin.trigger")) || (sender.hasPermission(pluginName.toLowerCase() + ".admin.trigger")))) {
+				if (t.getOwner().getName().equals(sender.getName()) || hasPerm(sender, ".admin.trigger")) {
 					// remove the reference
 					tc.removeReferenceToTrigger(selectedBlock, t);
 					sender.sendMessage(chatPrefix + "Successfully removed link to Trigger (ID=" + ChatColor.GREEN + t.getID() + ChatColor.WHITE + ") from " + ChatColor.GREEN + selectedBlock.getBlock().getType().toString());	
@@ -586,7 +452,7 @@ public final class MTCommands implements CommandExecutor {
 			final Trigger t = tc.getTriggerByID(id);
 			
 			if (t != null) {
-				if (t.getOwner().getName().equals(sender.getName()) || ((permissionsFound && plugin.getPermissionsHandler().has(sender, pluginName.toLowerCase() + ".admin.trigger")) || (sender.hasPermission(pluginName.toLowerCase() + ".admin.trigger")))) {
+				if (t.getOwner().getName().equals(sender.getName()) || hasPerm(sender, ".admin.trigger")) {
 					t.reset();
 					sender.sendMessage(chatPrefix + "Successfully reset Trigger (ID=" + ChatColor.GREEN + id + ChatColor.WHITE + ")");
 				} else {
@@ -609,7 +475,7 @@ public final class MTCommands implements CommandExecutor {
 			if (tc.getTrigger(key) != null) {
 				final Trigger t = tc.getTrigger(key);
 				
-				if (t.getOwner().getName().equals(sender.getName()) || ((permissionsFound && plugin.getPermissionsHandler().has(sender, pluginName.toLowerCase() + ".admin.trigger")) || (sender.hasPermission(pluginName.toLowerCase() + ".admin.trigger")))) {
+				if (t.getOwner().getName().equals(sender.getName()) || hasPerm(sender, ".admin.trigger")) {
 					int id = -1;
 					CreatureType ct = null;
 					
@@ -739,7 +605,7 @@ public final class MTCommands implements CommandExecutor {
 			if (tc.getTrigger(key) != null) {
 				final Trigger t = tc.getTrigger(key);
 				
-				if (t.getOwner().getName().equals(sender.getName()) || ((permissionsFound && plugin.getPermissionsHandler().has(sender, pluginName.toLowerCase() + ".admin.trigger")) || (sender.hasPermission(pluginName.toLowerCase() + ".admin.trigger")))) {
+				if (t.getOwner().getName().equals(sender.getName()) || hasPerm(sender, ".admin.trigger")) {
 					if (!pageIndex.containsKey(sender) || (currentBookID.containsKey(sender) && currentBookID.get(sender) != bookID)) {
 						pageIndex.put(sender, 0);
 					}
@@ -842,7 +708,7 @@ public final class MTCommands implements CommandExecutor {
 		
 		if (pageIndex.get(sender) == 0) {
 			for (Trigger t : list) {
-				if (t.getOwner().getName().equals(sender.getName()) || ((permissionsFound && plugin.getPermissionsHandler().has(sender, pluginName.toLowerCase() + ".admin.trigger")) || (sender.hasPermission(pluginName.toLowerCase() + ".admin.trigger")))) {
+				if (t.getOwner().getName().equals(sender.getName()) || hasPerm(sender, ".admin.trigger")) {
 					toDisplay.add(t);
 				}
 			}
