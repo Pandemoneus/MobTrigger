@@ -38,7 +38,7 @@ public final class MTBlockListener extends BlockListener {
 	public MTBlockListener(MobTrigger plugin) {
 		this.plugin = plugin;
 		pluginName = plugin.getPluginName();
-		chatPrefix = ChatColor.WHITE + "[" + ChatColor.GOLD + pluginName + ChatColor.WHITE + "] ";
+		chatPrefix = new StringBuilder("" + ChatColor.WHITE).append("[").append(ChatColor.GOLD).append(pluginName).append(ChatColor.WHITE).append("] ").toString();
 		permissionsFound = plugin.getPermissionsFound();
 	}
 	
@@ -79,10 +79,10 @@ public final class MTBlockListener extends BlockListener {
 					final Location triggerBlock = (Location) o[1];
 					
 					if ((permissionsFound && plugin.getPermissionsHandler().has(p, pluginName.toLowerCase() + ".trigger.destroy")) || (p.hasPermission(pluginName.toLowerCase() + ".trigger.destroy"))) {
-						p.sendMessage(chatPrefix + "You destroyed a trigger block at " + ChatColor.GREEN + "(" + triggerBlock.getBlockX() + ", " + triggerBlock.getBlockY() + ", " + triggerBlock.getBlockZ() + ").");
+						p.sendMessage(new StringBuilder(chatPrefix).append("You destroyed a trigger block at ").append(ChatColor.GREEN).append("(").append(triggerBlock.getBlockX()).append(", ").append(triggerBlock.getBlockY()).append(", ").append(triggerBlock.getBlockZ()).append(").").toString());
 						tc.removeReferenceToTrigger(triggerBlock, t);
 					} else {
-						p.sendMessage(chatPrefix + ChatColor.RED + "You are not allowed to destroy trigger blocks!");
+						p.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You are not allowed to destroy trigger blocks!").toString());
 						event.setCancelled(true);
 					}
 				}

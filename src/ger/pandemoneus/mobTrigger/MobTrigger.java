@@ -41,7 +41,10 @@ public class MobTrigger extends JavaPlugin {
 	 */
 	@Override
 	public void onDisable() { 
-		logger.info(pluginName + " disabled");
+		// cancel all scheduled triggers
+		getServer().getScheduler().cancelTasks(this);
+			
+		logger.info(new StringBuilder(pluginName).append(" disabled").toString());
 	}
 
 	/**
@@ -56,7 +59,7 @@ public class MobTrigger extends JavaPlugin {
 		
 		// set the owner of the logger
 		logger = new Log(this);
-		logger.info(pluginName + " v" + version + " enabled");
+		logger.info(new StringBuilder(pluginName).append(" v").append(version).append(" enabled").toString());
 		
 		// load up the configuration
 		config = new MTConfig(this);

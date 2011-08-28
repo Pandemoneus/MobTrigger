@@ -1,4 +1,4 @@
-MobTrigger plugin v1.00		
+MobTrigger plugin v1.01		
 by Pandemoneus		
 https://github.com/Pandemoneus
 

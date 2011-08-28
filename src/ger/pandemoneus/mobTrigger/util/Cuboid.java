@@ -8,7 +8,6 @@ import java.util.Random;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.entity.Player;
 
 /**
  * Modified by:
@@ -20,7 +19,7 @@ import org.bukkit.entity.Player;
  * http://forums.bukkit.org/threads/sec-mech-econ-residence-v2-3-7-self-serve-area-protection-system-buy-sell-land-economy-1000.9358/
  */
 public final class Cuboid {
-	private final Player owner;
+	private final String owner;
 	private final Location highPoints;
 	private final Location lowPoints;
 
@@ -31,7 +30,7 @@ public final class Cuboid {
 	 * @param startLoc the first point
 	 * @param endLoc the second point
 	 */
-	public Cuboid(Player owner, Location startLoc, Location endLoc) {
+	public Cuboid(String owner, Location startLoc, Location endLoc) {
 		this.owner = owner;
 		int highx, highy, highz, lowx, lowy, lowz;
 
@@ -139,7 +138,7 @@ public final class Cuboid {
 	 * 
 	 * @return the owner of this cuboid
 	 */
-	public Player getOwner() {
+	public String getOwner() {
 		return owner;
 	}
 
@@ -205,7 +204,7 @@ public final class Cuboid {
 	public Map<String, Object> save() {
 		Map<String, Object> root = new LinkedHashMap<String, Object>();
 
-		root.put("Owner", owner.getName());
+		root.put("Owner", owner);
 		root.put("World", this.highPoints.getWorld().getName());
 		root.put("X1", this.highPoints.getBlockX());
 		root.put("Y1", this.highPoints.getBlockY());
@@ -234,7 +233,6 @@ public final class Cuboid {
 		}
 
 		final String owner = (String) root.get("Owner");
-		final Player player = Bukkit.getServer().getPlayer(owner);
 		final World world = Bukkit.getServer().getWorld((String) root.get("World"));
 		final int x1 = (Integer) root.get("X1");
 		final int y1 = (Integer) root.get("Y1");
@@ -243,7 +241,7 @@ public final class Cuboid {
 		final int y2 = (Integer) root.get("Y2");
 		final int z2 = (Integer) root.get("Z2");
 
-		final Cuboid newArea = new Cuboid(player, new Location(world, x1, y1, z1), new Location(world, x2, y2, z2));
+		final Cuboid newArea = new Cuboid(owner, new Location(world, x1, y1, z1), new Location(world, x2, y2, z2));
 
 		return newArea;
 	}
@@ -262,7 +260,7 @@ public final class Cuboid {
 	 * @return a raw representation of this cuboid
 	 */
 	public String toRaw() {
-		return owner.getName() + "," + getWorld().getName() + "," + lowPoints.getBlockX() + "," + lowPoints.getBlockY() + "," + lowPoints.getBlockZ() + "," + highPoints.getBlockX() + "," + highPoints.getBlockY() + "," + highPoints.getBlockZ();
+		return owner + "," + getWorld().getName() + "," + lowPoints.getBlockX() + "," + lowPoints.getBlockY() + "," + lowPoints.getBlockZ() + "," + highPoints.getBlockX() + "," + highPoints.getBlockY() + "," + highPoints.getBlockZ();
 	}
 	
 	/**

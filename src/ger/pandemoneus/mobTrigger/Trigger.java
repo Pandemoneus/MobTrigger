@@ -11,7 +11,6 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.CreatureType;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitScheduler;
 
 /**
@@ -23,7 +22,7 @@ public final class Trigger implements Comparable<Trigger> {
 
 	private final MobTrigger plugin;
 	private final int id;
-	private final Player owner;
+	private final String owner;
 	private final Cuboid cuboid;
 	private final double firstDelay;
 	private final boolean selfTriggering;
@@ -55,7 +54,7 @@ public final class Trigger implements Comparable<Trigger> {
      * @param selfTriggerDelay the delay after which it executes itself again
      * @param totalTimes total times it can be executed
      */
-	public Trigger(MobTrigger plugin, int id, Player owner, Cuboid cuboid, double firstDelay, boolean selfTriggering, double selfTriggerDelay, int totalTimes) {
+	public Trigger(MobTrigger plugin, int id, String owner, Cuboid cuboid, double firstDelay, boolean selfTriggering, double selfTriggerDelay, int totalTimes) {
 		this.plugin = plugin;
 		this.id = id < 0 ? 0 : id;
 		this.owner = owner;
@@ -73,7 +72,7 @@ public final class Trigger implements Comparable<Trigger> {
 	Trigger() {
 		plugin = null;
 		id = -1;
-		owner = null;
+		owner = "";
 		cuboid = null;
 		firstDelay = 0;
 		selfTriggering = false;
@@ -95,7 +94,7 @@ public final class Trigger implements Comparable<Trigger> {
 	 * 
 	 * @return the owner of this trigger
 	 */
-	public Player getOwner() {
+	public String getOwner() {
 		return owner;
 	}
 	
@@ -226,6 +225,9 @@ public final class Trigger implements Comparable<Trigger> {
 	 * Spawns monsters in the defined cuboid.
 	 */
 	public void execute() {
+		if (plugin == null)
+			return;
+		
 		BukkitScheduler scheduler = plugin.getServer().getScheduler();
 		
 		if (remainingTimes != 0 && !isExecuting) {
@@ -395,7 +397,7 @@ public final class Trigger implements Comparable<Trigger> {
 		Map<String, Object> root = new LinkedHashMap<String, Object>();
 
 		root.put("ID", id);
-		root.put("Owner", owner.getName());
+		root.put("Owner", owner);
 		root.put("Cuboid", cuboid.toRaw());
 		root.put("FirstDelay", firstDelay);
 		root.put("SelfTriggering", selfTriggering);
@@ -422,14 +424,17 @@ public final class Trigger implements Comparable<Trigger> {
 		if (root == null) {
 			throw new IllegalArgumentException("Invalid root map!");
 		}
+		
+		/*
+		 * NOTE: I know this is pretty ugly and bad design, but I will use this until
+		 *       I find a better solution.
+		 */
 
 		MobTrigger p = (MobTrigger) Bukkit.getServer().getPluginManager().getPlugin("MobTrigger");
 		int i = -1;
-		String o;
-		Player player = null;
+		String o = "";
 		String world = "world";
-		String cuboidOwner;
-		Player cuboidPlayer = null;
+		String cuboidOwner = "";
 		double fd = 0.0;
 		boolean st = false;
 		double std = 0.0;
@@ -444,12 +449,10 @@ public final class Trigger implements Comparable<Trigger> {
 		try {
 			i = (Integer) root.get("ID");
 			o = (String) root.get("Owner");
-			player = p.getServer().getPlayer(o);
 			
 			String str = (String) root.get("Cuboid");
 			
 			cuboidOwner = str.substring(0, str.indexOf(","));
-			cuboidPlayer = p.getServer().getPlayer(cuboidOwner);
 			str = str.substring(str.indexOf(",") + 1);
 			world = str.substring(0, str.indexOf(","));
 			str = str.substring(str.indexOf(",") + 1);
@@ -486,8 +489,8 @@ public final class Trigger implements Comparable<Trigger> {
 		Location low = new Location(w, lowX, lowY, lowZ);
 		Location high = new Location(w, highX, highY, highZ);
 		
-		Cuboid c = new Cuboid(cuboidPlayer, low, high);
-		Trigger temp = new Trigger(p, i, player, c, fd, st, std, t);
+		Cuboid c = new Cuboid(cuboidOwner, low, high);
+		Trigger temp = new Trigger(p, i, o, c, fd, st, std, t);
 		
 		for (int j = 0; j < 13; j++) {
 			CreatureType mob = getMobNameById(j);

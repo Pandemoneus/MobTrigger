@@ -37,9 +37,9 @@ public final class MTCommands implements CommandExecutor {
 	private boolean permissionsFound = false;
 	private PermissionHandler ph = null;
 	
-	private final HashMap<Player, Integer> pageIndex = new HashMap<Player, Integer>();
-	private final HashMap<Player, Book> currentBook = new HashMap<Player, Book>();
-	private final HashMap<Player, Integer> currentBookID = new HashMap<Player, Integer>();
+	private final HashMap<String, Integer> pageIndex = new HashMap<String, Integer>();
+	private final HashMap<String, Book> currentBook = new HashMap<String, Book>();
+	private final HashMap<String, Integer> currentBookID = new HashMap<String, Integer>();
 
 	/**
 	 * Associates this object with a plugin
@@ -51,14 +51,12 @@ public final class MTCommands implements CommandExecutor {
 		this.plugin = plugin;
 		pluginName = plugin.getPluginName();
 		
-		chatPrefix = ChatColor.WHITE + "[" + ChatColor.GOLD + pluginName + ChatColor.WHITE + "] ";
-		notAuthorized = chatPrefix + ChatColor.RED + "You are not authorized to use this command.";
-		invalidArgs = chatPrefix + ChatColor.RED + "Too few or invalid arguments. Usage:";
+		chatPrefix = new StringBuilder("" + ChatColor.WHITE).append("[").append(ChatColor.GOLD).append(pluginName).append(ChatColor.WHITE).append("] ").toString();
+		notAuthorized = new StringBuilder(chatPrefix).append(ChatColor.RED).append("You are not authorized to use this command.").toString();
+		invalidArgs = new StringBuilder(chatPrefix).append(ChatColor.RED).append("Too few or invalid arguments. Usage:").toString();
 		
 		permissionsFound = plugin.getPermissionsFound();
-		if (permissionsFound) {
-			ph = plugin.getPermissionsHandler();
-		}
+		ph = plugin.getPermissionsHandler();
 	}
 
 	/**
@@ -70,7 +68,7 @@ public final class MTCommands implements CommandExecutor {
 			if (sender instanceof Player) {
 				determineCommand((Player) sender, cmd, commandLabel, args);
 			} else {
-				sender.sendMessage(chatPrefix + ChatColor.RED + "Sorry, you are not a player!");
+				sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Sorry, you are not a player!").toString());
 			}
 		}
 
@@ -230,7 +228,7 @@ public final class MTCommands implements CommandExecutor {
 	private void showInvalidArgsMsg(Player sender, String msg) {
 		sender.sendMessage(invalidArgs);
 		sender.sendMessage(msg);
-		sender.sendMessage(chatPrefix + ChatColor.GOLD + "() - required, [] - optional");
+		sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.GOLD).append("() - required, [] - optional").toString());
 	}
 	
 	private void showInvalidArgsMsg(Player sender, String[] msg) {
@@ -241,7 +239,7 @@ public final class MTCommands implements CommandExecutor {
 			sender.sendMessage(ChatColor.GREEN + msg[i]);
 		}
 		
-		sender.sendMessage(chatPrefix + ChatColor.GOLD + "() - required, [] - optional");
+		sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.GOLD).append("() - required, [] - optional").toString());
 	}
 	
 	private boolean hasPerm(Player sender, String perm) {
@@ -250,33 +248,35 @@ public final class MTCommands implements CommandExecutor {
 	}
 
 	private void select(Player sender) {
-		final HashSet<Player> set = plugin.getPlayerListener().playersInSelectionMode;
+		final HashSet<String> set = plugin.getPlayerListener().playersInSelectionMode;
 		
-		if (!set.contains(sender)) {
-			sender.sendMessage(chatPrefix + "Selection mode: " + ChatColor.GREEN + "ON");
-			sender.sendMessage(chatPrefix + "Selection tool: " + ChatColor.GREEN + Material.getMaterial(plugin.getConfig().getSelectionItemId()).toString());
-			set.add(sender);
+		if (!set.contains(sender.getName())) {
+			sender.sendMessage(new StringBuilder(chatPrefix).append("Selection mode: ").append(ChatColor.GREEN).append("ON").toString());
+			sender.sendMessage(new StringBuilder(chatPrefix).append("Selection tool: ").append(ChatColor.GREEN).append(Material.getMaterial(plugin.getConfig().getSelectionItemId()).toString()).toString());
+			set.add(sender.getName());
 		} else {
-			plugin.getPlayerListener().playersInSelectionMode.remove(sender);
-			sender.sendMessage(chatPrefix + "Selection mode: " + ChatColor.RED + "OFF");
+			plugin.getPlayerListener().playersInSelectionMode.remove(sender.getName());
+			sender.sendMessage(new StringBuilder(chatPrefix).append("Selection mode: ").append(ChatColor.RED).append("OFF").toString());
 		}
 	}
 	
 	private void saveCuboid(Player sender, String cuboidName) {
 		final YMLHelper cm = plugin.getConfig().getCuboidManager();
 		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
-		final HashMap<Player, Cuboid> map = plugin.getPlayerListener().triggerCuboid;
+		final HashMap<String, Cuboid> map = plugin.getPlayerListener().triggerCuboid;
 		
-		if (map.containsKey(sender)) {
-			final Cuboid newCuboid = map.get(sender);
+		final String senderName = sender.getName();
+		
+		if (map.containsKey(senderName)) {
+			final Cuboid newCuboid = map.get(senderName);
 			
 			if (cm.getMap(cuboidName) == null) {
 				cm.addMap(cuboidName, newCuboid.save());
-				sender.sendMessage(chatPrefix + "Saving new cuboid: " + ChatColor.GREEN + cuboidName);
+				sender.sendMessage(new StringBuilder(chatPrefix).append("Saving new cuboid: ").append(ChatColor.GREEN).append(cuboidName).toString());
 			} else {
 				final Cuboid oldCuboid = Cuboid.load(cm.getMap(cuboidName));
 				
-				if (oldCuboid.getOwner().getName().equals(sender.getName()) || ((permissionsFound && plugin.getPermissionsHandler().has(sender, pluginName.toLowerCase() + ".admin.cuboid")) || (sender.hasPermission(pluginName.toLowerCase() + ".admin.cuboid")))) {
+				if (oldCuboid.getOwner().equals(senderName) || hasPerm(sender, ".admin.cuboid")) {
 					final ArrayList<Trigger> list = tc.getTriggersByCuboid(oldCuboid);
 					for (Trigger t : list) {
 						final Trigger temp = new Trigger(plugin, t.getID(), t.getOwner(), newCuboid, t.getFirstDelay(), t.isSelfTriggering(), t.getSelfTriggerDelay(), t.getTotalTimes());
@@ -286,13 +286,13 @@ public final class MTCommands implements CommandExecutor {
 					}
 					
 					cm.addMap(cuboidName, newCuboid.save());
-					sender.sendMessage(chatPrefix + "Overwriting old cuboid: " + ChatColor.GREEN + cuboidName);
+					sender.sendMessage(new StringBuilder(chatPrefix).append("Overwriting old cuboid: ").append(ChatColor.GREEN).append(cuboidName).toString());
 				} else {
-					sender.sendMessage(chatPrefix + ChatColor.RED + "You are not the owner of the existing cuboid " + cuboidName + "!");
+					sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You are not the owner of the existing cuboid ").append(cuboidName).append("!").toString());
 				}
 			}
 		} else {
-			sender.sendMessage(chatPrefix + ChatColor.RED + "You have no cuboid selected!");
+			sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You have no cuboid selected!").toString());
 		}
 	}
 	
@@ -302,13 +302,13 @@ public final class MTCommands implements CommandExecutor {
 		if (cm.getMap(cuboidName) != null) {
 			final Cuboid c = Cuboid.load(cm.getMap(cuboidName));
 			
-			if (c.getOwner().getName().equals(sender.getName()) || ((permissionsFound && plugin.getPermissionsHandler().has(sender, pluginName.toLowerCase() + ".admin.cuboid")) || (sender.hasPermission(pluginName.toLowerCase() + ".admin.cuboid")))) {
-				sender.sendMessage(chatPrefix + "Cuboid " + ChatColor.GREEN + cuboidName + ChatColor.WHITE + " owned by " + ChatColor.GREEN + c.getOwner().getName() + ChatColor.WHITE + " is at " + ChatColor.GREEN + c.toString());
+			if (c.getOwner().equals(sender.getName()) || hasPerm(sender, ".admin.cuboid")) {
+				sender.sendMessage(new StringBuilder(chatPrefix).append("Cuboid ").append(ChatColor.GREEN).append(cuboidName).append(ChatColor.WHITE).append(" owned by ").append(ChatColor.GREEN).append(c.getOwner()).append(ChatColor.WHITE).append(" is at ").append(ChatColor.GREEN).append(c.toString()).toString());
 			} else {
-				sender.sendMessage(chatPrefix + ChatColor.RED + "You are not the owner of the cuboid " + cuboidName + "!");
+				sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You are not the owner of the cuboid ").append(cuboidName).append("!").toString());
 			}
 		} else {
-			sender.sendMessage(chatPrefix + ChatColor.RED + "Cuboid with name " + cuboidName + " does not exist!");
+			sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Cuboid with name ").append(cuboidName).append(" does not exist!").toString());
 		}
 	}
 	
@@ -317,11 +317,13 @@ public final class MTCommands implements CommandExecutor {
 		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
 		final MTPlayerListener pl = plugin.getPlayerListener();
 		
+		final String senderName = sender.getName();
+		
 		if (cm.getMap(cuboidName) != null) {
 			final Cuboid c = Cuboid.load(cm.getMap(cuboidName));
 			
-			if (c.getOwner().getName().equals(sender.getName()) || ((permissionsFound && plugin.getPermissionsHandler().has(sender, pluginName.toLowerCase() + ".admin.cuboid")) || (sender.hasPermission(pluginName.toLowerCase() + ".admin.cuboid")))) {
-				if (pl.selectedTriggerBlock.containsKey(sender) && pl.isValidType(pl.selectedTriggerBlock.get(sender).getBlock().getType())) {
+			if (c.getOwner().equals(senderName) || hasPerm(sender, ".admin.cuboid")) {
+				if (pl.selectedTriggerBlock.containsKey(senderName) && pl.isValidType(pl.selectedTriggerBlock.get(senderName).getBlock().getType())) {
 					int id = -1;
 					double fDelay = 0.0;
 					boolean sTriggering = Boolean.parseBoolean(selfTriggering);
@@ -331,45 +333,45 @@ public final class MTCommands implements CommandExecutor {
 					try {
 						id = Integer.parseInt(triggerId);
 					} catch (NumberFormatException nfe) {
-						sender.sendMessage(chatPrefix + ChatColor.RED + "Invalid trigger ID: " + triggerId);
+						sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Invalid trigger ID: ").append(triggerId).toString());
 					}
 					
 					try {
 						fDelay = Double.parseDouble(firstDelay);
 					} catch (NumberFormatException nfe) {
-						sender.sendMessage(chatPrefix + ChatColor.RED + "Invalid first delay: " + firstDelay);
+						sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Invalid first delay: ").append(firstDelay).toString());
 					}
 					
 					try {
 						stDelay = Double.parseDouble(selfTriggerDelay);
 					} catch (NumberFormatException nfe) {
-						sender.sendMessage(chatPrefix + ChatColor.RED + "Invalid self-trigger delay: " + selfTriggerDelay);
+						sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Invalid self-trigger delay: ").append(selfTriggerDelay).toString());
 					}
 					
 					try {
 						times = Integer.parseInt(totalTimes);
 					} catch (NumberFormatException nfe) {
-						sender.sendMessage(chatPrefix + ChatColor.RED + "Invalid amount of times: " + selfTriggerDelay);
+						sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Invalid amount of times: ").append(selfTriggerDelay).toString());
 					}
 					
 					
 					if (id != -1) {
 						final Location selectedBlock = pl.selectedTriggerBlock.get(sender);
-						final Trigger t = new Trigger(plugin, id, sender, c, fDelay, sTriggering, stDelay, times);
+						final Trigger t = new Trigger(plugin, id, senderName, c, fDelay, sTriggering, stDelay, times);
 						
 						tc.addReferenceToTrigger(selectedBlock, t);
 						tc.updateTrigger(t);
 						tc.addMap(triggerId, t.save());
-						sender.sendMessage(chatPrefix + "Successfully created a trigger!");
+						sender.sendMessage(new StringBuilder(chatPrefix).append("Successfully created a trigger!").toString());
 					}
 				} else {
-					sender.sendMessage(chatPrefix + ChatColor.RED + "You did not select a trigger block yet!");
+					sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You did not select a trigger block yet!").toString());
 				}
 			} else {
-				sender.sendMessage(chatPrefix + ChatColor.RED + "You are not the owner of the cuboid " + cuboidName + "!");
+				sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You are not the owner of the cuboid ").append(cuboidName).append("!").toString());
 			}
 		} else {
-			sender.sendMessage(chatPrefix + ChatColor.RED + "Cuboid with name " + cuboidName + " does not exist!");
+			sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Cuboid with name ").append(cuboidName).append(" does not exist!").toString());
 		}
 		
 	}
@@ -378,21 +380,23 @@ public final class MTCommands implements CommandExecutor {
 		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
 		final MTPlayerListener pl = plugin.getPlayerListener();
 		
-		if (pl.selectedTriggerBlock.containsKey(sender) && pl.isValidType(pl.selectedTriggerBlock.get(sender).getBlock().getType())) {
+		final String senderName = sender.getName();
+		
+		if (pl.selectedTriggerBlock.containsKey(senderName) && pl.isValidType(pl.selectedTriggerBlock.get(senderName).getBlock().getType())) {
 			int id = -1;
 			
 			try {
 				id = Integer.parseInt(triggerId);
 			} catch (NumberFormatException nfe) {
-				sender.sendMessage(chatPrefix + ChatColor.RED + "Invalid trigger ID: " + triggerId);
+				sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Invalid trigger ID: ").append(triggerId).toString());
 			}
 			
 			if (id != -1) {
-				final Location selectedBlock = pl.selectedTriggerBlock.get(sender);
+				final Location selectedBlock = pl.selectedTriggerBlock.get(senderName);
 				final Trigger t = tc.getTriggerByID(id);
 				
 				if (t != null) {
-					if (t.getOwner().getName().equals(sender.getName()) || hasPerm(sender, ".admin.trigger")) {
+					if (t.getOwner().equals(senderName) || hasPerm(sender, ".admin.trigger")) {
 						// remove old reference in case one exists
 						if (tc.getTrigger(selectedBlock) != null) {
 							tc.removeReferenceToTrigger(selectedBlock, tc.getTrigger(selectedBlock));
@@ -400,16 +404,16 @@ public final class MTCommands implements CommandExecutor {
 						
 						// add new reference
 						tc.addReferenceToTrigger(selectedBlock, t);
-						sender.sendMessage(chatPrefix + "Successfully linked " + ChatColor.GREEN + selectedBlock.getBlock().getType().toString() + ChatColor.WHITE + " to Trigger (ID=" + ChatColor.GREEN + id + ChatColor.WHITE + ")");
+						sender.sendMessage(new StringBuilder(chatPrefix).append("Successfully linked ").append(ChatColor.GREEN).append(selectedBlock.getBlock().getType().toString()).append(ChatColor.WHITE).append(" to Trigger (ID=").append(ChatColor.GREEN).append(id).append(ChatColor.WHITE).append(")").toString());
 					} else {
-						sender.sendMessage(chatPrefix + ChatColor.RED + "You are not the owner of Trigger ID=" + id + "!");
+						sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You are not the owner of Trigger ID=").append(id).append("!").toString());
 					}
 				} else {
-					sender.sendMessage(chatPrefix + ChatColor.RED + "Trigger with ID=" + id + " does not exist!");
+					sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Trigger with ID=").append(id).append(" does not exist!").toString());
 				}
 			}
 		} else {
-			sender.sendMessage(chatPrefix + ChatColor.RED + "You did not select a trigger block yet!");
+			sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You did not select a trigger block yet!").toString());
 		}
 	}
 	
@@ -417,23 +421,25 @@ public final class MTCommands implements CommandExecutor {
 		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
 		final MTPlayerListener pl = plugin.getPlayerListener();
 		
-		if (pl.selectedTriggerBlock.containsKey(sender) && pl.isValidType(pl.selectedTriggerBlock.get(sender).getBlock().getType())) {
-			final Location selectedBlock = pl.selectedTriggerBlock.get(sender);
+		final String senderName = sender.getName();
+		
+		if (pl.selectedTriggerBlock.containsKey(senderName) && pl.isValidType(pl.selectedTriggerBlock.get(senderName).getBlock().getType())) {
+			final Location selectedBlock = pl.selectedTriggerBlock.get(senderName);
 			final Trigger t = tc.getTrigger(selectedBlock);
 			
 			if (t != null) {
-				if (t.getOwner().getName().equals(sender.getName()) || hasPerm(sender, ".admin.trigger")) {
+				if (t.getOwner().equals(senderName) || hasPerm(sender, ".admin.trigger")) {
 					// remove the reference
 					tc.removeReferenceToTrigger(selectedBlock, t);
-					sender.sendMessage(chatPrefix + "Successfully removed link to Trigger (ID=" + ChatColor.GREEN + t.getID() + ChatColor.WHITE + ") from " + ChatColor.GREEN + selectedBlock.getBlock().getType().toString());	
+					sender.sendMessage(new StringBuilder(chatPrefix).append("Successfully removed link to Trigger (ID=").append(ChatColor.GREEN).append(t.getID()).append(ChatColor.WHITE).append(") from ").append(ChatColor.GREEN).append(selectedBlock.getBlock().getType().toString()).toString());	
 				} else {
-					sender.sendMessage(chatPrefix + ChatColor.RED + "You are not the owner of Trigger ID=" + t.getID() + "!");
+					sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You are not the owner of Trigger ID=").append(t.getID()).append("!").toString());
 				}
 			} else {
-				sender.sendMessage(chatPrefix + ChatColor.RED + "The selected block does not contain a trigger!");
+				sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("The selected block does not contain a trigger!").toString());
 			}
 		} else {
-			sender.sendMessage(chatPrefix + ChatColor.RED + "You did not select a trigger block yet!");
+			sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You did not select a trigger block yet!").toString());
 		}
 	}
 	
@@ -445,37 +451,39 @@ public final class MTCommands implements CommandExecutor {
 		try {
 			id = Integer.parseInt(triggerId);
 		} catch (NumberFormatException nfe) {
-			sender.sendMessage(chatPrefix + ChatColor.RED + "Invalid trigger ID: " + triggerId);
+			sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Invalid trigger ID: ").append(triggerId).toString());
 		}
 		
 		if (id != -1) {
 			final Trigger t = tc.getTriggerByID(id);
 			
 			if (t != null) {
-				if (t.getOwner().getName().equals(sender.getName()) || hasPerm(sender, ".admin.trigger")) {
+				if (t.getOwner().equals(sender.getName()) || hasPerm(sender, ".admin.trigger")) {
 					t.reset();
-					sender.sendMessage(chatPrefix + "Successfully reset Trigger (ID=" + ChatColor.GREEN + id + ChatColor.WHITE + ")");
+					sender.sendMessage(new StringBuilder(chatPrefix).append("Successfully reset Trigger (ID=").append(ChatColor.GREEN).append(id).append(ChatColor.WHITE).append(")").toString());
 				} else {
-					sender.sendMessage(chatPrefix + ChatColor.RED + "You are not the owner of Trigger ID=" + t.getID() + "!");
+					sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You are not the owner of Trigger ID=").append(t.getID()).append("!").toString());
 				}
 			} else {
-				sender.sendMessage(chatPrefix + ChatColor.RED + "Trigger with ID=" + id + " does not exist!");
+				sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Trigger with ID=").append(id).append(" does not exist!").toString());
 			}
 		}
 	}
 	
 	private void setMobAmount(Player sender, String type, String amount) {
 		final MTPlayerListener pl = plugin.getPlayerListener();
-		final HashMap<Player, Location> selectedTriggerMap = pl.selectedTriggerBlock;
+		final HashMap<String, Location> selectedTriggerMap = pl.selectedTriggerBlock;
 		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
 		
-		if (selectedTriggerMap.containsKey(sender)) {
-			final Location key = selectedTriggerMap.get(sender);
+		final String senderName = sender.getName();
+		
+		if (selectedTriggerMap.containsKey(senderName)) {
+			final Location key = selectedTriggerMap.get(senderName);
 			
 			if (tc.getTrigger(key) != null) {
 				final Trigger t = tc.getTrigger(key);
 				
-				if (t.getOwner().getName().equals(sender.getName()) || hasPerm(sender, ".admin.trigger")) {
+				if (t.getOwner().equals(senderName) || hasPerm(sender, ".admin.trigger")) {
 					int id = -1;
 					CreatureType ct = null;
 					
@@ -494,28 +502,28 @@ public final class MTCommands implements CommandExecutor {
 						try {
 							am = Integer.parseInt(amount);
 						} catch (NumberFormatException nfe) {
-							sender.sendMessage(chatPrefix + ChatColor.RED + "Given amount is not a number!");
+							sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Given amount is not a number!").toString());
 						}
 						
 						if (am >= 0) {
 							t.setAmountOfMobType(ct, am);
 							tc.addMap("" + t.getID(), t.save());
-							sender.sendMessage(chatPrefix + "Amount of " + ChatColor.GREEN + ct.getName() + ChatColor.WHITE + " set to " + ChatColor.GREEN + am);
+							sender.sendMessage(new StringBuilder(chatPrefix).append("Amount of ").append(ChatColor.GREEN).append(ct.getName()).append(ChatColor.WHITE).append(" set to ").append(ChatColor.GREEN).append(am).toString());
 						} else {
-							sender.sendMessage(chatPrefix + ChatColor.RED + "Amount must be greater or equal zero!");
+							sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Amount must be greater or equal zero!").toString());
 						}
 					
 					} else {
-						sender.sendMessage(chatPrefix + ChatColor.RED + "Invalid mob name or mob ID!");
+						sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Invalid mob name or mob ID!").toString());
 					}
 				} else {
-					sender.sendMessage(chatPrefix + ChatColor.RED + "You are not the owner of Trigger ID=" + t.getID() + "!");
+					sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You are not the owner of Trigger ID=").append(t.getID()).append("!").toString());
 				}
 			} else {
-				sender.sendMessage(chatPrefix + ChatColor.RED + "This block contains no trigger!");
+				sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("This block contains no trigger!").toString());
 			}
 		} else {
-			sender.sendMessage(chatPrefix + ChatColor.RED + "You did not select a trigger block yet!");
+			sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You did not select a trigger block yet!").toString());
 		}
 	}
 	
@@ -530,13 +538,15 @@ public final class MTCommands implements CommandExecutor {
 		
 		final int bookID = 0;
 		
-		if (!pageIndex.containsKey(sender) || (currentBookID.containsKey(sender) && currentBookID.get(sender) != bookID)) {
-			pageIndex.put(sender, 0);
+		final String senderName = sender.getName();
+		
+		if (!pageIndex.containsKey(senderName) || (currentBookID.containsKey(senderName) && currentBookID.get(senderName) != bookID)) {
+			pageIndex.put(senderName, 0);
 		}
 		
-		currentBookID.put(sender, bookID);
+		currentBookID.put(senderName, bookID);
 		
-		if (pageIndex.get(sender) == 0) {
+		if (pageIndex.get(senderName) == 0) {
 			// dummy trigger
 			final Trigger t = new Trigger();
 			
@@ -547,44 +557,44 @@ public final class MTCommands implements CommandExecutor {
 			// first page
 			Page p = new Page();
 			
-			p.addLine(chatPrefix + "Mob IDs (" + 1 + "/" + totalPages + ")");
+			p.addLine(new StringBuilder(chatPrefix).append("Mob IDs (").append(1).append("/").append(totalPages).append(")").toString());
 			p.addLine("------------------------");
 			
 			for (int i = 0; i < 5; i++) {
-				p.addLine("[" + ChatColor.GREEN + i + ChatColor.WHITE + "] " + ChatColor.GREEN + t.getMobNameById(i).getName());
+				p.addLine(new StringBuilder("[").append(ChatColor.GREEN).append(i).append(ChatColor.WHITE).append("] ").append(ChatColor.GREEN).append(t.getMobNameById(i).getName()).toString());
 			}
 			
-			p.addLine(ChatColor.GOLD + "Enter the command again to display the next page.");
+			p.addLine(new StringBuilder("").append(ChatColor.GOLD).append("Enter the command again to display the next page.").toString());
 
 			book.addPage(p);
 			
 			// second page
 			p = new Page();
 			
-			p.addLine(chatPrefix + "Mob IDs (" + 2 + "/" + totalPages + ")");
+			p.addLine(new StringBuilder(chatPrefix).append("Mob IDs (").append(2).append("/").append(totalPages).append(")").toString());
 			p.addLine("------------------------");
 			
 			for (int i = 7; i < 13; i++) {
-				p.addLine("[" + ChatColor.GREEN + i + ChatColor.WHITE + "] " + ChatColor.GREEN + t.getMobNameById(i).getName());
+				p.addLine(new StringBuilder("[").append(ChatColor.GREEN).append(i).append(ChatColor.WHITE).append("] ").append(ChatColor.GREEN).append(t.getMobNameById(i).getName()).toString());
 			}
 			
 			book.addPage(p);
 			
-			currentBook.put(sender, book);
+			currentBook.put(senderName, book);
 		}
 		
-		final int currentPage = pageIndex.get(sender) >= reservedPageStartIndex ? pageIndex.get(sender) - reservedPageStartIndex : 0;
+		final int currentPage = pageIndex.get(senderName) >= reservedPageStartIndex ? pageIndex.get(senderName) - reservedPageStartIndex : 0;
 		
-		if (currentPage < currentBook.get(sender).size()) {
-			currentBook.get(sender).getPage(currentPage).displayPage(sender, "");
+		if (currentPage < currentBook.get(senderName).size()) {
+			currentBook.get(senderName).getPage(currentPage).displayPage(sender, "");
 			
 			if (reservedPageStartIndex + currentPage + 1 < reservedPageStartIndex + reservedPages) {
-				pageIndex.put(sender, reservedPageStartIndex + currentPage + 1);
+				pageIndex.put(senderName, reservedPageStartIndex + currentPage + 1);
 			} else {
-				pageIndex.put(sender, 0);
+				pageIndex.put(senderName, 0);
 			}
 		} else {
-			pageIndex.put(sender, 0);
+			pageIndex.put(senderName, 0);
 		}
 	}
 	
@@ -595,24 +605,26 @@ public final class MTCommands implements CommandExecutor {
 		
 		final int bookID = 1;
 		
+		final String senderName = sender.getName();
+		
 		final MTPlayerListener pl = plugin.getPlayerListener();
-		final HashMap<Player, Location> selectedTriggerMap = pl.selectedTriggerBlock;
+		final HashMap<String, Location> selectedTriggerMap = pl.selectedTriggerBlock;
 		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
 
-		if (selectedTriggerMap.containsKey(sender)) {
-			final Location key = selectedTriggerMap.get(sender);
+		if (selectedTriggerMap.containsKey(senderName)) {
+			final Location key = selectedTriggerMap.get(senderName);
 			
 			if (tc.getTrigger(key) != null) {
 				final Trigger t = tc.getTrigger(key);
 				
-				if (t.getOwner().getName().equals(sender.getName()) || hasPerm(sender, ".admin.trigger")) {
-					if (!pageIndex.containsKey(sender) || (currentBookID.containsKey(sender) && currentBookID.get(sender) != bookID)) {
-						pageIndex.put(sender, 0);
+				if (t.getOwner().equals(senderName) || hasPerm(sender, ".admin.trigger")) {
+					if (!pageIndex.containsKey(senderName) || (currentBookID.containsKey(senderName) && currentBookID.get(senderName) != bookID)) {
+						pageIndex.put(senderName, 0);
 					}
 					
-					currentBookID.put(sender, bookID);
+					currentBookID.put(senderName, bookID);
 					
-					if (pageIndex.get(sender) == 0) {	
+					if (pageIndex.get(senderName) == 0) {	
 						final Cuboid c = t.getCuboid();
 						
 						final int totalPages = reservedPages;
@@ -622,69 +634,70 @@ public final class MTCommands implements CommandExecutor {
 						// first page
 						Page p = new Page();
 						
-						p.addLine(chatPrefix + "Trigger information (" + 1 + "/" + totalPages + ")");
+						p.addLine(new StringBuilder(chatPrefix).append("Trigger information (").append(1).append("/").append(totalPages).append(")").toString());
 						p.addLine("------------------------");
-						p.addLine("ID: " + ChatColor.GREEN + t.getID());
-						p.addLine("Owner: " + ChatColor.GREEN + t.getOwner().getName());
-						p.addLine("Cuboid: " + ChatColor.GREEN + c.toString() + ChatColor.WHITE + " owned by " + ChatColor.GREEN + c.getOwner().getName() + ChatColor.WHITE + " in world " + ChatColor.GREEN + c.getWorld().getName());
-						p.addLine("First execution delay: " + ChatColor.GREEN + t.getFirstDelay() + " seconds");
-						p.addLine(ChatColor.GOLD + "Enter the command again to display the next page.");
+						p.addLine(new StringBuilder("ID: ").append(ChatColor.GREEN).append(t.getID()).toString());
+						p.addLine(new StringBuilder("Owner: ").append(ChatColor.GREEN).append(t.getOwner()).toString());
+						p.addLine(new StringBuilder("Cuboid: ").append(ChatColor.GREEN).append(c.toString()).append(ChatColor.WHITE).append(" owned by ").append(ChatColor.GREEN).append(c.getOwner()).append(ChatColor.WHITE).append(" in world ").append(ChatColor.GREEN).append(c.getWorld().getName()).toString());
+						p.addLine(new StringBuilder("First execution delay: ").append(ChatColor.GREEN).append(t.getFirstDelay()).append(" seconds").toString());
+						p.addLine(new StringBuilder("").append(ChatColor.GOLD).append("Enter the command again to display the next page.").toString());
 					
 						book.addPage(p);
 						
 						// second page
 						p = new Page();
 						
-						p.addLine(chatPrefix + "Trigger information (" + 2 + "/" + totalPages + ")");
+						p.addLine(new StringBuilder(chatPrefix).append("Trigger information (").append(2).append("/").append(totalPages).append(")").toString());
 						p.addLine("------------------------");
-						p.addLine("Is self-triggering: " + ChatColor.GREEN + t.isSelfTriggering());
-						p.addLine("Consecutive execution delay: " + ChatColor.GREEN + t.getSelfTriggerDelay() + " seconds");
-						p.addLine("Total times: " + ChatColor.GREEN + t.getTotalTimes());
-						p.addLine("Remaining times: " + ChatColor.GREEN + t.getRemainingTimes());
+						p.addLine(new StringBuilder("Is self-triggering: ").append(ChatColor.GREEN).append(t.isSelfTriggering()).toString());
+						p.addLine(new StringBuilder("Consecutive execution delay: ").append(ChatColor.GREEN).append(t.getSelfTriggerDelay()).append(" seconds").toString());
+						p.addLine(new StringBuilder("Total times: ").append(ChatColor.GREEN).append(t.getTotalTimes()).toString());
+						p.addLine(new StringBuilder("Remaining times: ").append(ChatColor.GREEN).append(t.getRemainingTimes()).toString());
 						p.addLine("Spawning:");
 						
-						String list = "  ";
+						StringBuilder list = new StringBuilder("  ");
 						
 						for (int i = 0; i < 13; i++) {
 							final CreatureType ct = t.getMobNameById(i);
 							int amount = t.getAmountOfMobType(ct);
 							
 							if (amount != 0) {
-								list += ct.getName() + "[" + amount + "] ";
+								list.append(ct.getName()).append("[").append(amount).append("] ");
 							}
 						}
 						
 						if (!list.equals("  ")) {
-							p.addLine(ChatColor.GREEN + list);
+							p.addLine(new StringBuilder("").append(ChatColor.GREEN).append(list.toString()).toString());
 						} else {
-							p.addLine(ChatColor.GREEN + "  NOTHING");
+							p.addLine(new StringBuilder("").append(ChatColor.GREEN).append("  NOTHING").toString());
 						}
 						
 						book.addPage(p);
 						
-						currentBook.put(sender, book);
+						currentBook.put(senderName, book);
 					}
-					final int currentPage = pageIndex.get(sender) >= reservedPageStartIndex ? pageIndex.get(sender) - reservedPageStartIndex : 0;
 					
-					if (currentPage < currentBook.get(sender).size()) {
-						currentBook.get(sender).getPage(currentPage).displayPage(sender, "");
+					final int currentPage = pageIndex.get(senderName) >= reservedPageStartIndex ? pageIndex.get(senderName) - reservedPageStartIndex : 0;
+					
+					if (currentPage < currentBook.get(senderName).size()) {
+						currentBook.get(senderName).getPage(currentPage).displayPage(sender, "");
 						
 						if (reservedPageStartIndex + currentPage + 1 < reservedPageStartIndex + reservedPages) {
-							pageIndex.put(sender, reservedPageStartIndex + currentPage + 1);
+							pageIndex.put(senderName, reservedPageStartIndex + currentPage + 1);
 						} else {
-							pageIndex.put(sender, 0);
+							pageIndex.put(senderName, 0);
 						}
 					} else {
-						pageIndex.put(sender, 0);
+						pageIndex.put(senderName, 0);
 					}
 				} else {
-					sender.sendMessage(chatPrefix + ChatColor.RED + "You are not the owner of Trigger ID=" + t.getID() + "!");
+					sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You are not the owner of Trigger ID=").append(t.getID()).append("!").toString());
 				}
 			} else {
-				sender.sendMessage(chatPrefix + ChatColor.RED + "You did not create a trigger for this block yet!");
+				sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You did not create a trigger for this block yet!").toString());
 			}
 		} else {
-			sender.sendMessage(chatPrefix + ChatColor.RED + "You did not select a trigger block yet!");
+			sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You did not select a trigger block yet!").toString());
 		}
 	}
 	
@@ -695,20 +708,22 @@ public final class MTCommands implements CommandExecutor {
 		
 		final int bookID = 2;
 		
+		final String senderName = sender.getName();
+		
 		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
 		final ArrayList<Trigger> list = tc.getAllTriggers();
 		
 		final ArrayList<Trigger> toDisplay = new ArrayList<Trigger>();
 		
-		if (!pageIndex.containsKey(sender) || (currentBookID.containsKey(sender) && currentBookID.get(sender) != bookID)) {
-			pageIndex.put(sender, 0);
+		if (!pageIndex.containsKey(senderName) || (currentBookID.containsKey(senderName) && currentBookID.get(senderName) != bookID)) {
+			pageIndex.put(senderName, 0);
 		}
 		
-		currentBookID.put(sender, bookID);
+		currentBookID.put(senderName, bookID);
 		
-		if (pageIndex.get(sender) == 0) {
+		if (pageIndex.get(senderName) == 0) {
 			for (Trigger t : list) {
-				if (t.getOwner().getName().equals(sender.getName()) || hasPerm(sender, ".admin.trigger")) {
+				if (t.getOwner().equals(senderName) || hasPerm(sender, ".admin.trigger")) {
 					toDisplay.add(t);
 				}
 			}
@@ -719,35 +734,35 @@ public final class MTCommands implements CommandExecutor {
 			
 			Page p = new Page();
 			
-			p.addLine(chatPrefix + "Trigger IDs (" + 1 + "/" + totalPages + ")");
+			p.addLine(new StringBuilder(chatPrefix).append("Trigger IDs (").append(1).append("/").append(totalPages).append(")").toString());
 			p.addLine("------------------------");
 			
-			String s = "";
+			StringBuilder s = new StringBuilder("");
 			
 			for (int j = 0; j < toDisplay.size(); j++) {
-				s += "" + ChatColor.GREEN + toDisplay.get(j).getID() + ChatColor.WHITE + ", ";
+				s.append(ChatColor.GREEN).append(toDisplay.get(j).getID()).append(ChatColor.WHITE).append(", ");
 			}
 			
-			s = s.substring(0, s.length() - 2);
-			p.addLine(s);
+			s.delete(s.length() - 1, s.length());
+			p.addLine(s.toString());
 			
 			book.addPage(p);
 			
-			currentBook.put(sender, book);
+			currentBook.put(senderName, book);
 		}
 		
-		final int currentPage = pageIndex.get(sender) >= reservedPageStartIndex ? pageIndex.get(sender) - reservedPageStartIndex : 0;
+		final int currentPage = pageIndex.get(senderName) >= reservedPageStartIndex ? pageIndex.get(senderName) - reservedPageStartIndex : 0;
 		
-		if (currentPage < currentBook.get(sender).size()) {
-			currentBook.get(sender).getPage(currentPage).displayPage(sender, "");
+		if (currentPage < currentBook.get(senderName).size()) {
+			currentBook.get(senderName).getPage(currentPage).displayPage(sender, "");
 			
 			if (reservedPageStartIndex + currentPage + 1 < reservedPageStartIndex + reservedPages) {
-				pageIndex.put(sender, reservedPageStartIndex + currentPage + 1);
+				pageIndex.put(senderName, reservedPageStartIndex + currentPage + 1);
 			} else {
-				pageIndex.put(sender, 0);
+				pageIndex.put(senderName, 0);
 			}
 		} else {
-			pageIndex.put(sender, 0);
+			pageIndex.put(senderName, 0);
 		}
 	}
 	
@@ -758,13 +773,15 @@ public final class MTCommands implements CommandExecutor {
 		
 		final int bookID = 3;
 		
-		if (!pageIndex.containsKey(sender) || (currentBookID.containsKey(sender) && currentBookID.get(sender) != bookID)) {
-			pageIndex.put(sender, 0);
+		final String senderName = sender.getName();
+		
+		if (!pageIndex.containsKey(senderName) || (currentBookID.containsKey(senderName) && currentBookID.get(senderName) != bookID)) {
+			pageIndex.put(senderName, 0);
 		}
 		
-		currentBookID.put(sender, bookID);
+		currentBookID.put(senderName, bookID);
 		
-		if (pageIndex.get(sender) == 0) {			
+		if (pageIndex.get(senderName) == 0) {			
 			final int totalPages = reservedPages;
 			
 			final Book book = new Book();
@@ -772,71 +789,71 @@ public final class MTCommands implements CommandExecutor {
 			// first page
 			Page p = new Page();
 			
-			p.addLine(chatPrefix + "Command help (" + 1 + "/" + totalPages + ")");
+			p.addLine(new StringBuilder(chatPrefix).append("Command help (").append(1).append("/").append(totalPages).append(")").toString());
 			p.addLine("------------------------");
 			p.addLine("All commands are case-insensitive.");
 			p.addLine("Aliases: /mobtrigger /mt");
-			p.addLine(ChatColor.GREEN + "/mt select" + ChatColor.WHITE + " - Switches to selection mode");
-			p.addLine(ChatColor.GREEN + "/mt mobIDs" + ChatColor.WHITE + " - Shows a list of all mob IDs used by the plug-in");
-			p.addLine(ChatColor.GOLD + "Enter the command again to display the next page.");
+			p.addLine(new StringBuilder("").append(ChatColor.GREEN).append("/mt select").append(ChatColor.WHITE).append(" - Switches to selection mode").toString());
+			p.addLine(new StringBuilder("").append(ChatColor.GREEN).append("/mt mobIDs").append(ChatColor.WHITE).append(" - Shows a list of all mob IDs used by the plug-in").toString());
+			p.addLine(new StringBuilder("").append(ChatColor.GOLD).append("Enter the command again to display the next page.").toString());
 			
 			book.addPage(p);
 			
 			// second page
 			p = new Page();
 			
-			p.addLine(chatPrefix + "Command help (" + 2 + "/" + totalPages + ")");
+			p.addLine(new StringBuilder(chatPrefix).append("Command help (").append(2).append("/").append(totalPages).append(")").toString());
 			p.addLine("------------------------");
-			p.addLine(ChatColor.GREEN + "/mt cuboid save" + ChatColor.WHITE + " - Saves a selected cuboid under the");
+			p.addLine(new StringBuilder("").append(ChatColor.GREEN).append("/mt cuboid save").append(ChatColor.WHITE).append(" - Saves a selected cuboid under the").toString());
 			p.addLine("    specified name");
-			p.addLine(ChatColor.GREEN + "/mt cuboid info" + ChatColor.WHITE + " - Shows information about the specified cuboid");
-			p.addLine(ChatColor.GREEN + "/mt trigger create" + ChatColor.WHITE + " - Creates a trigger, enter the command");
+			p.addLine(new StringBuilder("").append(ChatColor.GREEN).append("/mt cuboid info").append(ChatColor.WHITE).append(" - Shows information about the specified cuboid").toString());
+			p.addLine(new StringBuilder("").append(ChatColor.GREEN).append("/mt trigger create").append(ChatColor.WHITE).append(" - Creates a trigger, enter the command").toString());
 			p.addLine("    for more information");
-			p.addLine(ChatColor.GOLD + "Enter the command again to display the next page.");
+			p.addLine(new StringBuilder("").append(ChatColor.GOLD).append("Enter the command again to display the next page.").toString());
 			
 			book.addPage(p);
 			
 			// third page
 			p = new Page();
 			
-			p.addLine(chatPrefix + "Command help (" + 3 + "/" + totalPages + ")");
+			p.addLine(new StringBuilder(chatPrefix).append("Command help (").append(3).append("/").append(totalPages).append(")").toString());
 			p.addLine("------------------------");
-			p.addLine(ChatColor.GREEN + "/mt trigger info" + ChatColor.WHITE + " - Shows information about the specified");
+			p.addLine(new StringBuilder("").append(ChatColor.GREEN).append("/mt trigger info").append(ChatColor.WHITE).append(" - Shows information about the specified").toString());
 			p.addLine("    trigger");
-			p.addLine(ChatColor.GREEN + "/mt trigger link" + ChatColor.WHITE + " - Links a trigger block to a trigger");
-			p.addLine(ChatColor.GREEN + "/mt trigger unlink" + ChatColor.WHITE + " - Removes a link from a trigger block");
-			p.addLine(ChatColor.GOLD + "Enter the command again to display the next page.");
+			p.addLine(new StringBuilder("").append(ChatColor.GREEN).append("/mt trigger link").append(ChatColor.WHITE).append(" - Links a trigger block to a trigger").toString());
+			p.addLine(new StringBuilder("").append(ChatColor.GREEN).append("/mt trigger unlink").append(ChatColor.WHITE).append(" - Removes a link from a trigger block").toString());
+			p.addLine(new StringBuilder("").append(ChatColor.GOLD).append("Enter the command again to display the next page.").toString());
 			
 			book.addPage(p);
 			
 			// fourth page
 			p = new Page();
 			
-			p.addLine(chatPrefix + "Command help (" + 4 + "/" + totalPages + ")");
+			p.addLine(new StringBuilder(chatPrefix).append("Command help (").append(4).append("/").append(totalPages).append(")").toString());
 			p.addLine("------------------------");
-			p.addLine(ChatColor.GREEN + "/mt trigger reset" + ChatColor.WHITE + " - Reset a trigger, also kills all mobs");
+			p.addLine(new StringBuilder("").append(ChatColor.GREEN).append("/mt trigger reset").append(ChatColor.WHITE).append(" - Reset a trigger, also kills all mobs").toString());
 			p.addLine("    spawned by the trigger");
-			p.addLine(ChatColor.GREEN + "/mt trigger showIDs" + ChatColor.WHITE + " - Shows a list of all triggers you own");
-			p.addLine(ChatColor.GREEN + "/mt trigger set" + ChatColor.WHITE + " - Sets the amount of mobs spawned by the");
+			p.addLine(new StringBuilder("").append(ChatColor.GREEN).append("/mt trigger showIDs").append(ChatColor.WHITE).append(" - Shows a list of all triggers you own").toString());
+			p.addLine(new StringBuilder("").append(ChatColor.GREEN).append("/mt trigger set").append(ChatColor.WHITE).append(" - Sets the amount of mobs spawned by the").toString());
 			p.addLine("    trigger");
 			
 			book.addPage(p);
 				
-			currentBook.put(sender, book);
+			currentBook.put(senderName, book);
 		}
+	
+		final int currentPage = pageIndex.get(senderName) >= reservedPageStartIndex ? pageIndex.get(senderName) - reservedPageStartIndex : 0;
 		
-		final int currentPage = pageIndex.get(sender) >= reservedPageStartIndex ? pageIndex.get(sender) - reservedPageStartIndex : 0;
-		
-		if (currentPage < currentBook.get(sender).size()) {
-			currentBook.get(sender).getPage(currentPage).displayPage(sender, "");
+		if (currentPage < currentBook.get(senderName).size()) {
+			currentBook.get(senderName).getPage(currentPage).displayPage(sender, "");
 			
 			if (reservedPageStartIndex + currentPage + 1 < reservedPageStartIndex + reservedPages) {
-				pageIndex.put(sender, reservedPageStartIndex + currentPage + 1);
+				pageIndex.put(senderName, reservedPageStartIndex + currentPage + 1);
 			} else {
-				pageIndex.put(sender, 0);
+				pageIndex.put(senderName, 0);
 			}
 		} else {
-			pageIndex.put(sender, 0);
+			pageIndex.put(senderName, 0);
 		}
 	}
 }

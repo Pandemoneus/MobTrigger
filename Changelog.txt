@@ -1,2 +1,5 @@
+Version 1.01
+- Code and performance tweaks
+
 Version 1.00
 - Initial release
