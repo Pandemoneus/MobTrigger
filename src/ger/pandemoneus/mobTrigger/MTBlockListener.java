@@ -1,17 +1,15 @@
 package ger.pandemoneus.mobTrigger;
 
+import ger.pandemoneus.mobTrigger.util.Util;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockRedstoneEvent;
-import org.bukkit.material.Attachable;
-import org.bukkit.material.Button;
-import org.bukkit.material.Lever;
 
 /**
  * BlockListener for the MobTrigger plug-in.
@@ -52,7 +50,7 @@ public final class MTBlockListener extends BlockListener {
 		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
 		
 		// only trigger when the current rises
-		if (isValidType(b.getType()) && event.getNewCurrent() == REDSTONE_ON) {
+		if (Util.isValidType(b.getType()) && event.getNewCurrent() == REDSTONE_ON) {
 			if (tc.getTrigger(loc) != null) {
 				tc.getTrigger(loc).execute();
 			}
@@ -111,52 +109,21 @@ public final class MTBlockListener extends BlockListener {
 		
 		Object[] result = null;
 		
-		if (isValidType(b.getType()) && tc.getTrigger(loc) != null) {
+		if (Util.isValidType(b.getType()) && tc.getTrigger(loc) != null) {
 			result = new Object[]{tc.getTrigger(loc), loc};
-		} else if (isButtonOrLever(southBlock.getType()) && southBlock.getRelative(getAttached(southBlock).getAttachedFace()).equals(b) && tc.getTrigger(southBlockLoc) != null) {
+		} else if (Util.isButtonOrLever(southBlock.getType()) && southBlock.getRelative(Util.getAttached(southBlock).getAttachedFace()).equals(b) && tc.getTrigger(southBlockLoc) != null) {
 			result = new Object[]{tc.getTrigger(southBlockLoc), southBlockLoc};
-		} else if (isButtonOrLever(westBlock.getType()) && westBlock.getRelative(getAttached(westBlock).getAttachedFace()).equals(b) && tc.getTrigger(westBlockLoc) != null) {
+		} else if (Util.isButtonOrLever(westBlock.getType()) && westBlock.getRelative(Util.getAttached(westBlock).getAttachedFace()).equals(b) && tc.getTrigger(westBlockLoc) != null) {
 			result = new Object[]{tc.getTrigger(westBlockLoc), westBlockLoc};
-		} else if (isButtonOrLever(northBlock.getType()) && northBlock.getRelative(getAttached(northBlock).getAttachedFace()).equals(b) && tc.getTrigger(northBlockLoc) != null) {
+		} else if (Util.isButtonOrLever(northBlock.getType()) && northBlock.getRelative(Util.getAttached(northBlock).getAttachedFace()).equals(b) && tc.getTrigger(northBlockLoc) != null) {
 			result = new Object[]{tc.getTrigger(northBlockLoc), northBlockLoc};
-		} else if (isButtonOrLever(eastBlock.getType()) && eastBlock.getRelative(getAttached(eastBlock).getAttachedFace()).equals(b) && tc.getTrigger(eastBlockLoc) != null) {
+		} else if (Util.isButtonOrLever(eastBlock.getType()) && eastBlock.getRelative(Util.getAttached(eastBlock).getAttachedFace()).equals(b) && tc.getTrigger(eastBlockLoc) != null) {
 			result = new Object[]{tc.getTrigger(eastBlockLoc), eastBlockLoc};
-		} else if ((isPressurePlate(topBlock.getType()) || (isLever(topBlock.getType())) && topBlock.getRelative(getAttached(topBlock).getAttachedFace()).equals(b)) && tc.getTrigger(topBlockLoc) != null)
+		} else if ((Util.isPressurePlate(topBlock.getType()) || (Util.isLever(topBlock.getType())) && topBlock.getRelative(Util.getAttached(topBlock).getAttachedFace()).equals(b)) && tc.getTrigger(topBlockLoc) != null)
 			result = new Object[]{tc.getTrigger(topBlockLoc), topBlockLoc};
 
 		return result;
 	}
 	
-	private boolean isButtonOrLever(Material mat) {
-		return isButton(mat) || isLever(mat);
-	}
 	
-	private boolean isButton(Material mat) {
-		return mat == Material.STONE_BUTTON;
-	}
-	
-	private boolean isLever(Material mat) {
-		return mat == Material.LEVER;
-	}
-	
-	private boolean isPressurePlate(Material mat) {
-		return (mat == Material.STONE_PLATE) || (mat == Material.WOOD_PLATE);
-	}
-	
-	private boolean isValidType(Material mat) {
-		return isButtonOrLever(mat) || isPressurePlate(mat);
-	}
-	
-	private Attachable getAttached(Block b) {
-		final Material type = b.getType();
-		Attachable result = null;
-		
-		if (isLever(type)) {
-			result = (Lever) b.getState().getData();
-		} else if (isButton(type)) {
-			result = (Button) b.getState().getData();
-		}
-		
-		return result;
-	}
 }

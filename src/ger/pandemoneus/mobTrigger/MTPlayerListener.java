@@ -1,13 +1,13 @@
 package ger.pandemoneus.mobTrigger;
 
 import ger.pandemoneus.mobTrigger.util.Cuboid;
+import ger.pandemoneus.mobTrigger.util.Util;
 
 import java.util.HashMap;
 import java.util.HashSet;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
@@ -82,7 +82,7 @@ public final class MTPlayerListener extends PlayerListener {
 						}
 					} else {
 						// check whether the selected block is valid one for a trigger
-						if (isValidType(b.getType())) {
+						if (Util.isValidType(b.getType())) {
 							event.setCancelled(true);
 							selectedTriggerBlock.put(playerName, loc);
 							
@@ -96,16 +96,12 @@ public final class MTPlayerListener extends PlayerListener {
 						}
 					}
 				}
-			} else if (isValidType(b.getType()) && tc.getTrigger(loc) != null) {
+			} else if (Util.isValidType(b.getType()) && tc.getTrigger(loc) != null) {
 				if (!((permissionsFound && plugin.getPermissionsHandler().has(p, pluginName.toLowerCase() + ".trigger.use")) || (p.hasPermission(pluginName.toLowerCase() + ".trigger.use")))) {
 					p.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You are not allowed to use triggers!").toString());
 					event.setCancelled(true);
 				}
 			}
 		}
-	}
-	
-	public boolean isValidType(Material mat) {
-		return (mat == null) ? false : (mat == Material.LEVER) || (mat == Material.STONE_BUTTON) || (mat == Material.STONE_PLATE) || (mat == Material.WOOD_PLATE);
 	}
 }

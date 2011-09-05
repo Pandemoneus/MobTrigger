@@ -3,6 +3,7 @@ package ger.pandemoneus.mobTrigger;
 import ger.pandemoneus.mobTrigger.util.Book;
 import ger.pandemoneus.mobTrigger.util.Cuboid;
 import ger.pandemoneus.mobTrigger.util.Page;
+import ger.pandemoneus.mobTrigger.util.Util;
 import ger.pandemoneus.mobTrigger.util.YMLHelper;
 
 import java.util.ArrayList;
@@ -323,7 +324,7 @@ public final class MTCommands implements CommandExecutor {
 			final Cuboid c = Cuboid.load(cm.getMap(cuboidName));
 			
 			if (c.getOwner().equals(senderName) || hasPerm(sender, ".admin.cuboid")) {
-				if (pl.selectedTriggerBlock.containsKey(senderName) && pl.isValidType(pl.selectedTriggerBlock.get(senderName).getBlock().getType())) {
+				if (pl.selectedTriggerBlock.containsKey(senderName) && Util.isValidType(pl.selectedTriggerBlock.get(senderName).getBlock().getType())) {
 					int id = -1;
 					double fDelay = 0.0;
 					boolean sTriggering = Boolean.parseBoolean(selfTriggering);
@@ -382,7 +383,7 @@ public final class MTCommands implements CommandExecutor {
 		
 		final String senderName = sender.getName();
 		
-		if (pl.selectedTriggerBlock.containsKey(senderName) && pl.isValidType(pl.selectedTriggerBlock.get(senderName).getBlock().getType())) {
+		if (pl.selectedTriggerBlock.containsKey(senderName) && Util.isValidType(pl.selectedTriggerBlock.get(senderName).getBlock().getType())) {
 			int id = -1;
 			
 			try {
@@ -423,7 +424,7 @@ public final class MTCommands implements CommandExecutor {
 		
 		final String senderName = sender.getName();
 		
-		if (pl.selectedTriggerBlock.containsKey(senderName) && pl.isValidType(pl.selectedTriggerBlock.get(senderName).getBlock().getType())) {
+		if (pl.selectedTriggerBlock.containsKey(senderName) && Util.isValidType(pl.selectedTriggerBlock.get(senderName).getBlock().getType())) {
 			final Location selectedBlock = pl.selectedTriggerBlock.get(senderName);
 			final Trigger t = tc.getTrigger(selectedBlock);
 			
@@ -489,11 +490,11 @@ public final class MTCommands implements CommandExecutor {
 					
 					try {
 						id = Integer.parseInt(type);
-						ct = t.getMobNameById(id);
+						ct = Util.getMobNameById(id);
 					} catch (NumberFormatException nfe) {}
 					
 					if (id == -1) {
-						ct = CreatureType.fromName(t.convertFromFriendlyMobString(type));
+						ct = CreatureType.fromName(Util.convertFromFriendlyMobString(type));
 					}
 					
 					if (ct != null) {
@@ -547,9 +548,7 @@ public final class MTCommands implements CommandExecutor {
 		currentBookID.put(senderName, bookID);
 		
 		if (pageIndex.get(senderName) == 0) {
-			// dummy trigger
-			final Trigger t = new Trigger();
-			
+			// dummy trigger			
 			final int totalPages = reservedPages;
 			
 			final Book book = new Book();
@@ -561,7 +560,7 @@ public final class MTCommands implements CommandExecutor {
 			p.addLine("------------------------");
 			
 			for (int i = 0; i < 5; i++) {
-				p.addLine(new StringBuilder("[").append(ChatColor.GREEN).append(i).append(ChatColor.WHITE).append("] ").append(ChatColor.GREEN).append(t.getMobNameById(i).getName()).toString());
+				p.addLine(new StringBuilder("[").append(ChatColor.GREEN).append(i).append(ChatColor.WHITE).append("] ").append(ChatColor.GREEN).append(Util.getMobNameById(i).getName()).toString());
 			}
 			
 			p.addLine(new StringBuilder("").append(ChatColor.GOLD).append("Enter the command again to display the next page.").toString());
@@ -575,7 +574,7 @@ public final class MTCommands implements CommandExecutor {
 			p.addLine("------------------------");
 			
 			for (int i = 7; i < 13; i++) {
-				p.addLine(new StringBuilder("[").append(ChatColor.GREEN).append(i).append(ChatColor.WHITE).append("] ").append(ChatColor.GREEN).append(t.getMobNameById(i).getName()).toString());
+				p.addLine(new StringBuilder("[").append(ChatColor.GREEN).append(i).append(ChatColor.WHITE).append("] ").append(ChatColor.GREEN).append(Util.getMobNameById(i).getName()).toString());
 			}
 			
 			book.addPage(p);
@@ -658,7 +657,7 @@ public final class MTCommands implements CommandExecutor {
 						StringBuilder list = new StringBuilder("  ");
 						
 						for (int i = 0; i < 13; i++) {
-							final CreatureType ct = t.getMobNameById(i);
+							final CreatureType ct = Util.getMobNameById(i);
 							int amount = t.getAmountOfMobType(ct);
 							
 							if (amount != 0) {

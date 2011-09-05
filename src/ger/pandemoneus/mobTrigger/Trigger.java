@@ -1,6 +1,7 @@
 package ger.pandemoneus.mobTrigger;
 
 import ger.pandemoneus.mobTrigger.util.Cuboid;
+import ger.pandemoneus.mobTrigger.util.Util;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -162,7 +163,7 @@ public final class Trigger implements Comparable<Trigger> {
 		int result = 0;
 		
 		for (int i = 0; i < amountOfMobs.length; i++) {
-			if (getMobNameById(i) == ct) {
+			if (Util.getMobNameById(i) == ct) {
 				result = amountOfMobs[i];
 			}
 		}
@@ -191,7 +192,7 @@ public final class Trigger implements Comparable<Trigger> {
 		}
 		
 		for (int i = 0; i < amountOfMobs.length; i++) {
-			if (getMobNameById(i) == ct) {
+			if (Util.getMobNameById(i) == ct) {
 				amountOfMobs[i] = amount;
 			}
 		}
@@ -251,7 +252,7 @@ public final class Trigger implements Comparable<Trigger> {
 		
 		for (int i = 0; i < amountOfMobs.length; i++) {
 			for (int j = 0; j < amountOfMobs[i]; j++) {
-				Entity spawnedEntity = cuboid.getWorld().spawnCreature(cuboid.getRandomLocationForMobs(), getMobNameById(i));
+				Entity spawnedEntity = cuboid.getWorld().spawnCreature(cuboid.getRandomLocationForMobs(), Util.getMobNameById(i));
 				spawnedCreatures.add(spawnedEntity);
 			}
 		}
@@ -282,84 +283,6 @@ public final class Trigger implements Comparable<Trigger> {
 		}
 		
 		spawnedCreatures.clear();
-	}
-	
-	/**
-	 * Returns the mob name associated with the ID.
-	 * 
-	 * @param id the ID
-	 * @return the mob name associated with the ID
-	 */
-	public CreatureType getMobNameById(int id) {
-		CreatureType result = null;
-		
-		switch (id) {
-		case 0:
-			result = CreatureType.CHICKEN;
-			break;
-		case 1:
-			result = CreatureType.COW;
-			break;
-		case 2:
-			result = CreatureType.CREEPER;
-			break;
-		case 3:
-			result = CreatureType.GHAST;
-			break;
-		case 4:
-			result = CreatureType.PIG;
-			break;
-		case 5:
-			result = CreatureType.PIG_ZOMBIE;
-			break;
-		case 6:
-			result = CreatureType.SHEEP;
-			break;
-		case 7:
-			result = CreatureType.SKELETON;
-			break;
-		case 8:
-			result = CreatureType.SLIME;
-			break;
-		case 9:
-			result = CreatureType.SPIDER;
-			break;
-		case 10:
-			result = CreatureType.SQUID;
-			break;
-		case 11:
-			result = CreatureType.WOLF;
-			break;
-		case 12:
-			result = CreatureType.ZOMBIE;
-			break;
-		default:
-			break;
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * Returns a string that equals one of the names in CreatureType if the mobName matches one of them.
-	 * 
-	 * Otherwise an empty string will be returned.
-	 * 
-	 * @param mobName the name of the mob to get the CreatureType string from
-	 * @return a string that equals one of the names in CreatureType if the mobName matches one of them
-	 */
-	public String convertFromFriendlyMobString(String mobName) {
-		String result = "";
-		
-		if (mobName != null && !mobName.equals("")) {
-			for (int i = 0; i < 13; i++) {
-				if (getMobNameById(i).getName().equalsIgnoreCase(mobName.trim())) {
-					result = getMobNameById(i).getName();
-				}
-			}
-		}
-		
-		return result;
 	}
 	
 	/**
@@ -405,7 +328,7 @@ public final class Trigger implements Comparable<Trigger> {
 		root.put("TotalTimes", totalTimes);
 		
 		for (int i = 0; i < 13; i++) {
-			CreatureType mob = getMobNameById(i);
+			CreatureType mob = Util.getMobNameById(i);
 			root.put("amountOf." + mob.getName(), getAmountOfMobType(mob));
 		}
 		
@@ -493,7 +416,7 @@ public final class Trigger implements Comparable<Trigger> {
 		Trigger temp = new Trigger(p, i, o, c, fd, st, std, t);
 		
 		for (int j = 0; j < 13; j++) {
-			CreatureType mob = getMobNameById(j);
+			CreatureType mob = Util.getMobNameById(j);
 			temp.setAmountOfMobType(mob, (Integer) root.get("amountOf." + mob.getName()));
 		}
 
