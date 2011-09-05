@@ -251,16 +251,16 @@ public final class Cuboid {
 	 */
 	@Override
 	public String toString() {
-		return "(" + lowPoints.getBlockX() + ", " + lowPoints.getBlockY() + ", " + lowPoints.getBlockZ() + ") to (" + highPoints.getBlockX() + ", " + highPoints.getBlockY() + ", " + highPoints.getBlockZ() + ")";
+		return new StringBuilder("(").append(lowPoints.getBlockX()).append(", ").append(lowPoints.getBlockY()).append(", ").append(lowPoints.getBlockZ()).append(") to (").append(highPoints.getBlockX()).append(", ").append(highPoints.getBlockY()).append(", ").append(highPoints.getBlockZ()).append(")").toString();
 	}
 	
 	/**
-	 * Returns a raw representation that is easy to read.
+	 * Returns a raw representation that is easy to read for Java.
 	 * 
 	 * @return a raw representation of this cuboid
 	 */
 	public String toRaw() {
-		return owner + "," + getWorld().getName() + "," + lowPoints.getBlockX() + "," + lowPoints.getBlockY() + "," + lowPoints.getBlockZ() + "," + highPoints.getBlockX() + "," + highPoints.getBlockY() + "," + highPoints.getBlockZ();
+		return new StringBuilder(owner).append(",").append(getWorld().getName()).append(",").append(lowPoints.getBlockX()).append(",").append(lowPoints.getBlockY()).append(",").append(lowPoints.getBlockZ()).append(",").append(highPoints.getBlockX()).append(",").append(highPoints.getBlockY()).append(",").append(highPoints.getBlockZ()).toString();
 	}
 	
 	/**
