@@ -32,31 +32,14 @@ public final class Cuboid {
 	 */
 	public Cuboid(String owner, Location startLoc, Location endLoc) {
 		this.owner = owner;
-		int highx, highy, highz, lowx, lowy, lowz;
 
-		if (startLoc.getBlockX() > endLoc.getBlockX()) {
-			highx = startLoc.getBlockX();
-			lowx = endLoc.getBlockX();
-		} else {
-			highx = endLoc.getBlockX();
-			lowx = startLoc.getBlockX();
-		}
-
-		if (startLoc.getBlockY() > endLoc.getBlockY()) {
-			highy = startLoc.getBlockY();
-			lowy = endLoc.getBlockY();
-		} else {
-			highy = endLoc.getBlockY();
-			lowy = startLoc.getBlockY();
-		}
-
-		if (startLoc.getBlockZ() > endLoc.getBlockZ()) {
-			highz = startLoc.getBlockZ();
-			lowz = endLoc.getBlockZ();
-		} else {
-			highz = endLoc.getBlockZ();
-			lowz = startLoc.getBlockZ();
-		}
+		final int lowx = Math.min(startLoc.getBlockX(), endLoc.getBlockX());
+		final int lowy = Math.min(startLoc.getBlockY(), endLoc.getBlockY());
+		final int lowz = Math.min(startLoc.getBlockZ(), endLoc.getBlockZ());
+		
+		final int highx = Math.max(startLoc.getBlockX(), endLoc.getBlockX());
+		final int highy = Math.max(startLoc.getBlockY(), endLoc.getBlockY());
+		final int highz = Math.max(startLoc.getBlockZ(), endLoc.getBlockZ());
 
 		highPoints = new Location(startLoc.getWorld(), highx, highy, highz);
 		lowPoints = new Location(startLoc.getWorld(), lowx, lowy, lowz);
