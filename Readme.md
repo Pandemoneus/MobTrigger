@@ -1,4 +1,4 @@
-MobTrigger plugin v1.01		
+MobTrigger plugin v1.02		
 by Pandemoneus		
 https://github.com/Pandemoneus
 
@@ -36,7 +36,8 @@ Aliases: /mobtrigger /mt
 *   firstDelay - the delay in seconds after which the trigger will fire the first time		
 *   isSelfTriggering - determines whether the trigger executes itself again after it was first fired		
 *   selfTriggerDelay - the delay in seconds after which it will execute itself again		
-*   totalTimes - the total amount of times the trigger can be executed before it needs to be reset		
+*   totalTimes - the total amount of times the trigger can be executed before it needs to be reset
+*   resetTime - the time in seconds after which the trigger resets itself after the very last possible execution
 /mt trigger info - Shows information about the currently selected trigger		
 /mt trigger link (int triggerID) - Links a trigger block to a trigger with the specified ID		
 /mt trigger unlink - Removes the link from the selected trigger block		
@@ -52,7 +53,7 @@ Step by step guide on how to create your first trigger:
 4. Save your cuboid! Tpye /mt cuboid save MyFirstCuboid   (requires 'mobtrigger.trigger.cuboid.save' permission)
 5. Now search for the trigger block you want to use (either a lever, button, wooden/stone pressure plate).
 6. Click that block while NOT having a lever in your hand and still being in selection mode.
-7. You got everything that we need now! Now type /mt trigger create 0 MyFirstCuboid 0 false 0 1   (requires 'mobtrigger.trigger.create' permission)
+7. You got everything that we need now! Now type /mt trigger create 0 MyFirstCuboid 0 false 0 1 300   (requires 'mobtrigger.trigger.create' permission)
 8. Now that we have created the trigger, we need to add mobs to it. Type /mt trigger set pig 3 to make 3 pigs spawn when we trigger it.  (requires 'mobtrigger.trigger.create' permission)
 9. And we are good to go! Type /mt select to exit the selection mode.
 10. Press the button/lever/pressure plate and see whether it works!   (requires 'mobtrigger.trigger.use' permission)

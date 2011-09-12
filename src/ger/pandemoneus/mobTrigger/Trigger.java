@@ -29,16 +29,23 @@ public final class Trigger implements Comparable<Trigger> {
 	private final boolean selfTriggering;
 	private final double selfTriggerDelay;
 	private final int totalTimes;
+	private final double resetTime;
 	private final int[] amountOfMobs = new int[13];
 	
 	private int remainingTimes;
-	private int taskID = 0;
+	private int taskID;
 	private boolean isExecuting = false;
 	
 	private final Runnable exec = new Runnable() {
         public void run() {
             fire();
         }
+    };
+    
+    private final Runnable reset = new Runnable() {
+    	public void run() {
+    		reset();
+    	}
     };
     
     private final HashSet<Entity> spawnedCreatures = new HashSet<Entity>();
@@ -54,8 +61,9 @@ public final class Trigger implements Comparable<Trigger> {
      * @param selfTriggering determines whether the trigger executes itself again
      * @param selfTriggerDelay the delay after which it executes itself again
      * @param totalTimes total times it can be executed
+     * @param resetTime time in seconds after which the trigger resets
      */
-	public Trigger(MobTrigger plugin, int id, String owner, Cuboid cuboid, double firstDelay, boolean selfTriggering, double selfTriggerDelay, int totalTimes) {
+	public Trigger(MobTrigger plugin, int id, String owner, Cuboid cuboid, double firstDelay, boolean selfTriggering, double selfTriggerDelay, int totalTimes, double resetTime) {
 		this.plugin = plugin;
 		this.id = id < 0 ? 0 : id;
 		this.owner = owner;
@@ -64,21 +72,23 @@ public final class Trigger implements Comparable<Trigger> {
 		this.selfTriggering = selfTriggering;
 		this.selfTriggerDelay = selfTriggerDelay < 0.0 ? 0.0 : selfTriggerDelay;
 		this.totalTimes = totalTimes < 0 ? 0 : totalTimes;
+		this.resetTime = resetTime < 0.0 ? 0.0 : resetTime;
 		remainingTimes = this.totalTimes;
 	}
 	
 	/**
 	 * Constructs a dummy trigger object that is not meant for real use.
 	 */
-	Trigger() {
+	protected Trigger() {
 		plugin = null;
 		id = -1;
 		owner = "";
 		cuboid = null;
-		firstDelay = 0;
+		firstDelay = 0.0;
 		selfTriggering = false;
-		selfTriggerDelay = 0;
+		selfTriggerDelay = 0.0;
 		totalTimes = 0;
+		resetTime = 0.0;
 	}
 	
 	/**
@@ -151,6 +161,15 @@ public final class Trigger implements Comparable<Trigger> {
 	 */
 	public int getTotalTimes() {
 		return totalTimes;
+	}
+	
+	/**
+	 * Returns the time in seconds that has to pass after the last triggering before the trigger gets reset.
+	 * 
+	 * @return the time in seconds that has to pass after the last triggering before the trigger gets reset.
+	 */
+	public double getResetTime() {
+		return resetTime;
 	}
 	
 	/**
@@ -231,7 +250,7 @@ public final class Trigger implements Comparable<Trigger> {
 		
 		BukkitScheduler scheduler = plugin.getServer().getScheduler();
 		
-		if (remainingTimes != 0 && !isExecuting) {
+		if (!isExecuting) {
 			if(!selfTriggering) {
 				taskID = scheduler.scheduleAsyncDelayedTask(plugin, exec, Math.round(20 * firstDelay));
 			} else {
@@ -244,11 +263,7 @@ public final class Trigger implements Comparable<Trigger> {
 	private synchronized void fire() {
 		BukkitScheduler scheduler = plugin.getServer().getScheduler();
 		
-		if (remainingTimes == 0) {
-			scheduler.cancelTask(taskID);
-			isExecuting = false;
-			return;
-		}
+		remainingTimes--;
 		
 		for (int i = 0; i < amountOfMobs.length; i++) {
 			for (int j = 0; j < amountOfMobs[i]; j++) {
@@ -257,7 +272,11 @@ public final class Trigger implements Comparable<Trigger> {
 			}
 		}
 		
-		remainingTimes--;
+		if (remainingTimes == 0) {
+			scheduler.cancelTask(taskID);
+			taskID = scheduler.scheduleAsyncDelayedTask(plugin, reset, Math.round(20 * resetTime));
+			isExecuting = false;
+		}		
 	}
 	
 	/**
@@ -265,7 +284,7 @@ public final class Trigger implements Comparable<Trigger> {
 	 * 
 	 * Also kills all mobs spawned by the trigger.
 	 */
-	public void reset() {
+	public synchronized void reset() {
 		BukkitScheduler scheduler = plugin.getServer().getScheduler();
 		
 		// reset the times to their original state
@@ -326,6 +345,7 @@ public final class Trigger implements Comparable<Trigger> {
 		root.put("SelfTriggering", selfTriggering);
 		root.put("SelfTriggerDelay", selfTriggerDelay);
 		root.put("TotalTimes", totalTimes);
+		root.put("ResetTime", resetTime);
 		
 		for (int i = 0; i < 13; i++) {
 			CreatureType mob = Util.getMobNameById(i);
@@ -362,6 +382,7 @@ public final class Trigger implements Comparable<Trigger> {
 		boolean st = false;
 		double std = 0.0;
 		int t = 1;
+		double rt = 0.0;
 		int lowX = 0;
 		int lowY = 0;
 		int lowZ = 0;
@@ -373,28 +394,26 @@ public final class Trigger implements Comparable<Trigger> {
 			i = (Integer) root.get("ID");
 			o = (String) root.get("Owner");
 			
-			String str = (String) root.get("Cuboid");
+			String[] str = ((String) root.get("Cuboid")).split(",");
 			
-			cuboidOwner = str.substring(0, str.indexOf(","));
-			str = str.substring(str.indexOf(",") + 1);
-			world = str.substring(0, str.indexOf(","));
-			str = str.substring(str.indexOf(",") + 1);
-			lowX = Integer.parseInt(str.substring(0, str.indexOf(",")));
-			str = str.substring(str.indexOf(",") + 1);
-			lowY = Integer.parseInt(str.substring(0, str.indexOf(",")));
-			str = str.substring(str.indexOf(",") + 1);
-			lowZ = Integer.parseInt(str.substring(0, str.indexOf(",")));
-			str = str.substring(str.indexOf(",") + 1);
-			highX = Integer.parseInt(str.substring(0, str.indexOf(",")));
-			str = str.substring(str.indexOf(",") + 1);
-			highY = Integer.parseInt(str.substring(0, str.indexOf(",")));
-			str = str.substring(str.indexOf(",") + 1);
-			highZ = Integer.parseInt(str);
+			if (str.length >= 8) {
+				cuboidOwner = str[0].trim();
+				world = str[1].trim();
+				lowX = Integer.parseInt(str[2].trim());
+				lowY = Integer.parseInt(str[3].trim());
+				lowZ = Integer.parseInt(str[4].trim());
+				highX = Integer.parseInt(str[5].trim());
+				highY = Integer.parseInt(str[6].trim());
+				highZ = Integer.parseInt(str[7].trim());
+			} else {
+				p.getLogger().severe("Ill-formated raw cuboid data in trigger with ID=" + i);
+			}
 			
 			fd = (Double) root.get("FirstDelay");
 			st = (Boolean) root.get("SelfTriggering");
 			std = (Double) root.get("SelfTriggerDelay");
 			t = (Integer) root.get("TotalTimes");
+			rt = (Double) root.get("ResetTime");
 		} catch (NumberFormatException nfe) {
 			p.getLogger().severe("Ill-formated raw cuboid data in trigger with ID=" + i);
 			nfe.printStackTrace();
@@ -413,7 +432,7 @@ public final class Trigger implements Comparable<Trigger> {
 		Location high = new Location(w, highX, highY, highZ);
 		
 		Cuboid c = new Cuboid(cuboidOwner, low, high);
-		Trigger temp = new Trigger(p, i, o, c, fd, st, std, t);
+		Trigger temp = new Trigger(p, i, o, c, fd, st, std, t, rt);
 		
 		for (int j = 0; j < 13; j++) {
 			CreatureType mob = Util.getMobNameById(j);

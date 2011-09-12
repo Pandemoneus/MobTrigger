@@ -1,3 +1,8 @@
+Version 1.02
+- Fixed trigger creation
+- Added Op-permission
+- Added additional parameter for /trigger create which allows to specify a time in seconds after which the trigger resets itself
+
 Version 1.01
 - Code and performance tweaks
 

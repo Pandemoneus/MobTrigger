@@ -9,6 +9,7 @@ import ger.pandemoneus.mobTrigger.util.YMLHelper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -140,15 +141,15 @@ public final class MTCommands implements CommandExecutor {
 				// trigger
 				if (addenum != null) {
 					if (addenum.equalsIgnoreCase("create")) {	
-						if (n >= 8 && argsValid(args)) {
+						if (n >= 9 && argsValid(args)) {
 							// create
 							if (hasPerm(sender, ".trigger.create")) {
-								createTrigger(sender, args[2], args[3], args[4], args[5], args[6], args[7]);
+								createTrigger(sender, args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
 							} else {
 								sender.sendMessage(notAuthorized);
 							}
 						} else {
-							showInvalidArgsMsg(sender, new String[]{"trigger create", "(int triggerID)", "(String cuboidName)", "(double firstDelay - delay in seconds after which the trigger is first fired)", "(boolean isSelfTrigging - determines whether the trigger executes itself after the first triggering)", "(double selfTriggerDelay - delay in seconds after which the trigger triggers itself again)", "(int totalTimes - the total times the trigger can fire)"});
+							showInvalidArgsMsg(sender, new String[]{"trigger create", "(int triggerID)", "(String cuboidName)", "(double firstDelay - delay in seconds after which the trigger is first fired)", "(boolean isSelfTrigging - determines whether the trigger executes itself after the first triggering)", "(double selfTriggerDelay - delay in seconds after which the trigger triggers itself again)", "(int totalTimes - the total times the trigger can fire)", "(double resetTime - time in seconds until the trigger resets itself)"});
 						}	
 					} else if (addenum.equalsIgnoreCase("info")) {
 						//info
@@ -214,7 +215,7 @@ public final class MTCommands implements CommandExecutor {
 		}
 	}
 	
-	private boolean argsValid(String[] args) {
+	private static boolean argsValid(String[] args) {
 		boolean result = true;
 		
 		for (int i = 0; i < args.length; i++) {
@@ -244,7 +245,7 @@ public final class MTCommands implements CommandExecutor {
 	}
 	
 	private boolean hasPerm(Player sender, String perm) {
-		return (permissionsFound && ph.has(sender, pluginName.toLowerCase() + perm)) || (sender.hasPermission(pluginName.toLowerCase() + perm));
+		return (permissionsFound && ph.has(sender, pluginName.toLowerCase() + perm)) || (sender.hasPermission(pluginName.toLowerCase() + perm) || sender.isOp());
 
 	}
 
@@ -280,7 +281,7 @@ public final class MTCommands implements CommandExecutor {
 				if (oldCuboid.getOwner().equals(senderName) || hasPerm(sender, ".admin.cuboid")) {
 					final ArrayList<Trigger> list = tc.getTriggersByCuboid(oldCuboid);
 					for (Trigger t : list) {
-						final Trigger temp = new Trigger(plugin, t.getID(), t.getOwner(), newCuboid, t.getFirstDelay(), t.isSelfTriggering(), t.getSelfTriggerDelay(), t.getTotalTimes());
+						final Trigger temp = new Trigger(plugin, t.getID(), t.getOwner(), newCuboid, t.getFirstDelay(), t.isSelfTriggering(), t.getSelfTriggerDelay(), t.getTotalTimes(), t.getResetTime());
 						temp.setAmountOfMobs(t.getAmountOfMobs());
 						tc.updateTrigger(temp);
 						tc.addMap("" + temp.getID(), temp.save());
@@ -313,7 +314,7 @@ public final class MTCommands implements CommandExecutor {
 		}
 	}
 	
-	private void createTrigger(Player sender, String triggerId, String cuboidName, String firstDelay, String selfTriggering, String selfTriggerDelay, String totalTimes) {
+	private void createTrigger(Player sender, String triggerId, String cuboidName, String firstDelay, String selfTriggering, String selfTriggerDelay, String totalTimes, String resetTime) {
 		final YMLHelper cm = plugin.getConfig().getCuboidManager();
 		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
 		final MTPlayerListener pl = plugin.getPlayerListener();
@@ -330,6 +331,7 @@ public final class MTCommands implements CommandExecutor {
 					boolean sTriggering = Boolean.parseBoolean(selfTriggering);
 					double stDelay = 0.0;
 					int times = 1;
+					double rTime = 0.0;
 					
 					try {
 						id = Integer.parseInt(triggerId);
@@ -352,13 +354,19 @@ public final class MTCommands implements CommandExecutor {
 					try {
 						times = Integer.parseInt(totalTimes);
 					} catch (NumberFormatException nfe) {
-						sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Invalid amount of times: ").append(selfTriggerDelay).toString());
+						sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Invalid amount of times: ").append(totalTimes).toString());
+					}
+					
+					try {
+						rTime = Double.parseDouble(resetTime);
+					} catch (NumberFormatException nfe) {
+						sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("Invalid reset time: ").append(resetTime).toString());
 					}
 					
 					
 					if (id != -1) {
-						final Location selectedBlock = pl.selectedTriggerBlock.get(sender);
-						final Trigger t = new Trigger(plugin, id, senderName, c, fDelay, sTriggering, stDelay, times);
+						final Location selectedBlock = pl.selectedTriggerBlock.get(senderName);
+						final Trigger t = new Trigger(plugin, id, senderName, c, fDelay, sTriggering, stDelay, times, rTime);
 						
 						tc.addReferenceToTrigger(selectedBlock, t);
 						tc.updateTrigger(t);
@@ -582,19 +590,7 @@ public final class MTCommands implements CommandExecutor {
 			currentBook.put(senderName, book);
 		}
 		
-		final int currentPage = pageIndex.get(senderName) >= reservedPageStartIndex ? pageIndex.get(senderName) - reservedPageStartIndex : 0;
-		
-		if (currentPage < currentBook.get(senderName).size()) {
-			currentBook.get(senderName).getPage(currentPage).displayPage(sender, "");
-			
-			if (reservedPageStartIndex + currentPage + 1 < reservedPageStartIndex + reservedPages) {
-				pageIndex.put(senderName, reservedPageStartIndex + currentPage + 1);
-			} else {
-				pageIndex.put(senderName, 0);
-			}
-		} else {
-			pageIndex.put(senderName, 0);
-		}
+		showPage(reservedPageStartIndex, reservedPages, sender);
 	}
 	
 	private void infoTrigger(Player sender) {
@@ -652,6 +648,7 @@ public final class MTCommands implements CommandExecutor {
 						p.addLine(new StringBuilder("Consecutive execution delay: ").append(ChatColor.GREEN).append(t.getSelfTriggerDelay()).append(" seconds").toString());
 						p.addLine(new StringBuilder("Total times: ").append(ChatColor.GREEN).append(t.getTotalTimes()).toString());
 						p.addLine(new StringBuilder("Remaining times: ").append(ChatColor.GREEN).append(t.getRemainingTimes()).toString());
+						p.addLine(new StringBuilder("Reset time: ").append(ChatColor.GREEN).append(t.getResetTime()).append(" seconds").toString());
 						p.addLine("Spawning:");
 						
 						StringBuilder list = new StringBuilder("  ");
@@ -676,19 +673,7 @@ public final class MTCommands implements CommandExecutor {
 						currentBook.put(senderName, book);
 					}
 					
-					final int currentPage = pageIndex.get(senderName) >= reservedPageStartIndex ? pageIndex.get(senderName) - reservedPageStartIndex : 0;
-					
-					if (currentPage < currentBook.get(senderName).size()) {
-						currentBook.get(senderName).getPage(currentPage).displayPage(sender, "");
-						
-						if (reservedPageStartIndex + currentPage + 1 < reservedPageStartIndex + reservedPages) {
-							pageIndex.put(senderName, reservedPageStartIndex + currentPage + 1);
-						} else {
-							pageIndex.put(senderName, 0);
-						}
-					} else {
-						pageIndex.put(senderName, 0);
-					}
+					showPage(reservedPageStartIndex, reservedPages, sender);
 				} else {
 					sender.sendMessage(new StringBuilder(chatPrefix).append(ChatColor.RED).append("You are not the owner of Trigger ID=").append(t.getID()).append("!").toString());
 				}
@@ -750,19 +735,7 @@ public final class MTCommands implements CommandExecutor {
 			currentBook.put(senderName, book);
 		}
 		
-		final int currentPage = pageIndex.get(senderName) >= reservedPageStartIndex ? pageIndex.get(senderName) - reservedPageStartIndex : 0;
-		
-		if (currentPage < currentBook.get(senderName).size()) {
-			currentBook.get(senderName).getPage(currentPage).displayPage(sender, "");
-			
-			if (reservedPageStartIndex + currentPage + 1 < reservedPageStartIndex + reservedPages) {
-				pageIndex.put(senderName, reservedPageStartIndex + currentPage + 1);
-			} else {
-				pageIndex.put(senderName, 0);
-			}
-		} else {
-			pageIndex.put(senderName, 0);
-		}
+		showPage(reservedPageStartIndex, reservedPages, sender);
 	}
 	
 	private void showHelp(Player sender) {
@@ -841,6 +814,11 @@ public final class MTCommands implements CommandExecutor {
 			currentBook.put(senderName, book);
 		}
 	
+		showPage(reservedPageStartIndex, reservedPages, sender);
+	}
+	
+	private void showPage(int reservedPageStartIndex, int reservedPages, Player sender) {
+		final String senderName = sender.getName();
 		final int currentPage = pageIndex.get(senderName) >= reservedPageStartIndex ? pageIndex.get(senderName) - reservedPageStartIndex : 0;
 		
 		if (currentPage < currentBook.get(senderName).size()) {
