@@ -36,7 +36,7 @@ Aliases: /mobtrigger /mt
 *   firstDelay - the delay in seconds after which the trigger will fire the first time		
 *   isSelfTriggering - determines whether the trigger executes itself again after it was first fired		
 *   selfTriggerDelay - the delay in seconds after which it will execute itself again		
-*   totalTimes - the total amount of times the trigger can be executed before it needs to be reset
+*   totalTimes - the total amount of times the trigger can be executed before it needs to be reset		
 *   resetTime - the time in seconds after which the trigger resets itself after the very last possible execution
 /mt trigger info - Shows information about the currently selected trigger		
 /mt trigger link (int triggerID) - Links a trigger block to a trigger with the specified ID		
