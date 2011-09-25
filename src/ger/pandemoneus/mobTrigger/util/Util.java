@@ -88,42 +88,54 @@ public class Util {
 		
 		switch (id) {
 		case 0:
-			result = CreatureType.CHICKEN;
+			result = CreatureType.CAVE_SPIDER;
 			break;
 		case 1:
-			result = CreatureType.COW;
+			result = CreatureType.CHICKEN;
 			break;
 		case 2:
-			result = CreatureType.CREEPER;
+			result = CreatureType.COW;
 			break;
 		case 3:
-			result = CreatureType.GHAST;
+			result = CreatureType.CREEPER;
 			break;
 		case 4:
-			result = CreatureType.PIG;
+			result = CreatureType.ENDERMAN;
 			break;
 		case 5:
-			result = CreatureType.PIG_ZOMBIE;
+			result = CreatureType.GHAST;
 			break;
 		case 6:
-			result = CreatureType.SHEEP;
+			result = CreatureType.PIG;
 			break;
 		case 7:
-			result = CreatureType.SKELETON;
+			result = CreatureType.PIG_ZOMBIE;
 			break;
 		case 8:
-			result = CreatureType.SLIME;
+			result = CreatureType.MONSTER;
 			break;
 		case 9:
-			result = CreatureType.SPIDER;
+			result = CreatureType.SHEEP;
 			break;
 		case 10:
-			result = CreatureType.SQUID;
+			result = CreatureType.SILVERFISH;
 			break;
 		case 11:
-			result = CreatureType.WOLF;
+			result = CreatureType.SKELETON;
 			break;
 		case 12:
+			result = CreatureType.SLIME;
+			break;
+		case 13:
+			result = CreatureType.SPIDER;
+			break;
+		case 14:
+			result = CreatureType.SQUID;
+			break;
+		case 15:
+			result = CreatureType.WOLF;
+			break;
+		case 16:
 			result = CreatureType.ZOMBIE;
 			break;
 		default:

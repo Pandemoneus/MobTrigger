@@ -1,6 +1,6 @@
 name: MobTrigger
 main: ger.pandemoneus.mobTrigger.MobTrigger
-version: '1.02'
+version: '1.03'
 author: 'Pandemoneus'
 softdepend: [Permissions]
 

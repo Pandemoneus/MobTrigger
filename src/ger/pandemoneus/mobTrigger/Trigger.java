@@ -30,7 +30,7 @@ public final class Trigger implements Comparable<Trigger> {
 	private final double selfTriggerDelay;
 	private final int totalTimes;
 	private final double resetTime;
-	private final int[] amountOfMobs = new int[13];
+	private final int[] amountOfMobs = new int[17];
 	
 	private int remainingTimes;
 	private int taskID;
@@ -347,7 +347,7 @@ public final class Trigger implements Comparable<Trigger> {
 		root.put("TotalTimes", totalTimes);
 		root.put("ResetTime", resetTime);
 		
-		for (int i = 0; i < 13; i++) {
+		for (int i = 0; i < amountOfMobs.length; i++) {
 			CreatureType mob = Util.getMobNameById(i);
 			root.put("amountOf." + mob.getName(), getAmountOfMobType(mob));
 		}
@@ -434,7 +434,7 @@ public final class Trigger implements Comparable<Trigger> {
 		Cuboid c = new Cuboid(cuboidOwner, low, high);
 		Trigger temp = new Trigger(p, i, o, c, fd, st, std, t, rt);
 		
-		for (int j = 0; j < 13; j++) {
+		for (int j = 0; j < amountOfMobs.length; j++) {
 			CreatureType mob = Util.getMobNameById(j);
 			temp.setAmountOfMobType(mob, (Integer) root.get("amountOf." + mob.getName()));
 		}

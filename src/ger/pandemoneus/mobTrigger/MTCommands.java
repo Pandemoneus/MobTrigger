@@ -541,9 +541,9 @@ public final class MTCommands implements CommandExecutor {
 	/*---------------------------*/
 	
 	private void showMobIDs(Player sender) {
-		// reserved page indices: 1-2
+		// reserved page indices: 1-3
 		final int reservedPageStartIndex = 1;
-		final int reservedPages = 2;
+		final int reservedPages = 3;
 		
 		final int bookID = 0;
 		
@@ -567,7 +567,7 @@ public final class MTCommands implements CommandExecutor {
 			p.addLine(new StringBuilder(chatPrefix).append("Mob IDs (").append(1).append("/").append(totalPages).append(")").toString());
 			p.addLine("------------------------");
 			
-			for (int i = 0; i < 5; i++) {
+			for (int i = 0; i < 6; i++) {
 				p.addLine(new StringBuilder("[").append(ChatColor.GREEN).append(i).append(ChatColor.WHITE).append("] ").append(ChatColor.GREEN).append(Util.getMobNameById(i).getName()).toString());
 			}
 			
@@ -585,6 +585,20 @@ public final class MTCommands implements CommandExecutor {
 				p.addLine(new StringBuilder("[").append(ChatColor.GREEN).append(i).append(ChatColor.WHITE).append("] ").append(ChatColor.GREEN).append(Util.getMobNameById(i).getName()).toString());
 			}
 			
+			p.addLine(new StringBuilder("").append(ChatColor.GOLD).append("Enter the command again to display the next page.").toString());
+			
+			book.addPage(p);
+			
+			// third page
+			p = new Page();
+			
+			p.addLine(new StringBuilder(chatPrefix).append("Mob IDs (").append(3).append("/").append(totalPages).append(")").toString());
+			p.addLine("------------------------");
+			
+			for (int i = 14; i < 17; i++) {
+				p.addLine(new StringBuilder("[").append(ChatColor.GREEN).append(i).append(ChatColor.WHITE).append("] ").append(ChatColor.GREEN).append(Util.getMobNameById(i).getName()).toString());
+			}
+			
 			book.addPage(p);
 			
 			currentBook.put(senderName, book);
@@ -594,8 +608,8 @@ public final class MTCommands implements CommandExecutor {
 	}
 	
 	private void infoTrigger(Player sender) {
-		// reserved page indices: 3-4
-		final int reservedPageStartIndex = 3;
+		// reserved page indices: 4-5
+		final int reservedPageStartIndex = 4;
 		final int reservedPages = 2;
 		
 		final int bookID = 1;
@@ -686,8 +700,8 @@ public final class MTCommands implements CommandExecutor {
 	}
 	
 	private void showTriggerIDs(Player sender) {
-		// reserved page indices: 5
-		final int reservedPageStartIndex = 5;
+		// reserved page indices: 6
+		final int reservedPageStartIndex = 6;
 		final int reservedPages = 1;
 		
 		final int bookID = 2;
@@ -739,8 +753,8 @@ public final class MTCommands implements CommandExecutor {
 	}
 	
 	private void showHelp(Player sender) {
-		// reserved page indices: 6-9
-		final int reservedPageStartIndex = 6;
+		// reserved page indices: 7-10
+		final int reservedPageStartIndex = 7;
 		final int reservedPages = 4;
 		
 		final int bookID = 3;
