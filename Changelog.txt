@@ -1,6 +1,11 @@
+Version 1.04
+- Fixed continuous spawning of mobs although remainingTimes was already 0
+- Fixed missing IDs on the MobID pages
+- Fixed setting amount of mobs via names
+- Fixed missing mob amount info in trigger info
+
 Version 1.03
 - Added Endermen, Monsters (Steves), Silverfish and Cave Spiders as mob spawns
-
 
 Version 1.02
 - Fixed trigger creation

@@ -1,5 +1,7 @@
 package ger.pandemoneus.mobTrigger.util;
 
+import ger.pandemoneus.mobTrigger.Trigger;
+
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.CreatureType;
@@ -155,9 +157,10 @@ public class Util {
 	 */
 	public static String convertFromFriendlyMobString(String mobName) {
 		String result = "";
+		final int n = Trigger.NUMBER_OF_CREATURE_TYPES;
 		
 		if (mobName != null && !mobName.equals("")) {
-			for (int i = 0; i < 13; i++) {
+			for (int i = 0; i < n; i++) {
 				if (getMobNameById(i).getName().equalsIgnoreCase(mobName.trim())) {
 					result = getMobNameById(i).getName();
 				}

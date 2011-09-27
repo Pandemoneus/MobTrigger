@@ -20,6 +20,8 @@ import org.bukkit.scheduler.BukkitScheduler;
  * @author Pandemoneus - https://github.com/Pandemoneus
  */
 public final class Trigger implements Comparable<Trigger> {
+	
+	public static final int NUMBER_OF_CREATURE_TYPES = 17;
 
 	private final MobTrigger plugin;
 	private final int id;
@@ -30,7 +32,7 @@ public final class Trigger implements Comparable<Trigger> {
 	private final double selfTriggerDelay;
 	private final int totalTimes;
 	private final double resetTime;
-	private final int[] amountOfMobs = new int[17];
+	private final int[] amountOfMobs = new int[NUMBER_OF_CREATURE_TYPES];
 	
 	private int remainingTimes;
 	private int taskID;
@@ -181,7 +183,7 @@ public final class Trigger implements Comparable<Trigger> {
 	public int getAmountOfMobType(CreatureType ct) {
 		int result = 0;
 		
-		for (int i = 0; i < amountOfMobs.length; i++) {
+		for (int i = 0; i < NUMBER_OF_CREATURE_TYPES; i++) {
 			if (Util.getMobNameById(i) == ct) {
 				result = amountOfMobs[i];
 			}
@@ -210,7 +212,7 @@ public final class Trigger implements Comparable<Trigger> {
 			return;
 		}
 		
-		for (int i = 0; i < amountOfMobs.length; i++) {
+		for (int i = 0; i < NUMBER_OF_CREATURE_TYPES; i++) {
 			if (Util.getMobNameById(i) == ct) {
 				amountOfMobs[i] = amount;
 			}
@@ -224,7 +226,7 @@ public final class Trigger implements Comparable<Trigger> {
 	 * @param amount the amount to spawn
 	 */
 	public void setAmountOfMobs(int[] amountArray) {
-		int n = amountOfMobs.length;
+		int n = NUMBER_OF_CREATURE_TYPES;
 		if (amountArray == null || amountArray.length != n) {
 			return;
 		}
@@ -260,19 +262,21 @@ public final class Trigger implements Comparable<Trigger> {
 		}
 	}
 	
-	private synchronized void fire() {
+	private synchronized void fire() {		
+		if (remainingTimes == 0) {
+			return;
+		}
+		
 		BukkitScheduler scheduler = plugin.getServer().getScheduler();
 		
-		remainingTimes--;
-		
-		for (int i = 0; i < amountOfMobs.length; i++) {
+		for (int i = 0; i < NUMBER_OF_CREATURE_TYPES; i++) {
 			for (int j = 0; j < amountOfMobs[i]; j++) {
 				Entity spawnedEntity = cuboid.getWorld().spawnCreature(cuboid.getRandomLocationForMobs(), Util.getMobNameById(i));
 				spawnedCreatures.add(spawnedEntity);
 			}
 		}
 		
-		if (remainingTimes == 0) {
+		if (--remainingTimes == 0) {
 			scheduler.cancelTask(taskID);
 			taskID = scheduler.scheduleAsyncDelayedTask(plugin, reset, Math.round(20 * resetTime));
 			isExecuting = false;
@@ -347,7 +351,7 @@ public final class Trigger implements Comparable<Trigger> {
 		root.put("TotalTimes", totalTimes);
 		root.put("ResetTime", resetTime);
 		
-		for (int i = 0; i < amountOfMobs.length; i++) {
+		for (int i = 0; i < NUMBER_OF_CREATURE_TYPES; i++) {
 			CreatureType mob = Util.getMobNameById(i);
 			root.put("amountOf." + mob.getName(), getAmountOfMobType(mob));
 		}
@@ -434,7 +438,7 @@ public final class Trigger implements Comparable<Trigger> {
 		Cuboid c = new Cuboid(cuboidOwner, low, high);
 		Trigger temp = new Trigger(p, i, o, c, fd, st, std, t, rt);
 		
-		for (int j = 0; j < amountOfMobs.length; j++) {
+		for (int j = 0; j < NUMBER_OF_CREATURE_TYPES; j++) {
 			CreatureType mob = Util.getMobNameById(j);
 			temp.setAmountOfMobType(mob, (Integer) root.get("amountOf." + mob.getName()));
 		}

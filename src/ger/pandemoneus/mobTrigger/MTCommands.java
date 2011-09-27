@@ -567,7 +567,9 @@ public final class MTCommands implements CommandExecutor {
 			p.addLine(new StringBuilder(chatPrefix).append("Mob IDs (").append(1).append("/").append(totalPages).append(")").toString());
 			p.addLine("------------------------");
 			
-			for (int i = 0; i < 6; i++) {
+			int i = 0;
+			
+			for (; i < 6; i++) {
 				p.addLine(new StringBuilder("[").append(ChatColor.GREEN).append(i).append(ChatColor.WHITE).append("] ").append(ChatColor.GREEN).append(Util.getMobNameById(i).getName()).toString());
 			}
 			
@@ -581,7 +583,7 @@ public final class MTCommands implements CommandExecutor {
 			p.addLine(new StringBuilder(chatPrefix).append("Mob IDs (").append(2).append("/").append(totalPages).append(")").toString());
 			p.addLine("------------------------");
 			
-			for (int i = 7; i < 13; i++) {
+			for (; i < 12; i++) {
 				p.addLine(new StringBuilder("[").append(ChatColor.GREEN).append(i).append(ChatColor.WHITE).append("] ").append(ChatColor.GREEN).append(Util.getMobNameById(i).getName()).toString());
 			}
 			
@@ -595,7 +597,7 @@ public final class MTCommands implements CommandExecutor {
 			p.addLine(new StringBuilder(chatPrefix).append("Mob IDs (").append(3).append("/").append(totalPages).append(")").toString());
 			p.addLine("------------------------");
 			
-			for (int i = 14; i < 17; i++) {
+			for (; i < 17; i++) {
 				p.addLine(new StringBuilder("[").append(ChatColor.GREEN).append(i).append(ChatColor.WHITE).append("] ").append(ChatColor.GREEN).append(Util.getMobNameById(i).getName()).toString());
 			}
 			
@@ -608,9 +610,9 @@ public final class MTCommands implements CommandExecutor {
 	}
 	
 	private void infoTrigger(Player sender) {
-		// reserved page indices: 4-5
-		final int reservedPageStartIndex = 4;
-		final int reservedPages = 2;
+		// reserved page indices: 10-12
+		final int reservedPageStartIndex = 10;
+		final int reservedPages = 3;
 		
 		final int bookID = 1;
 		
@@ -663,12 +665,22 @@ public final class MTCommands implements CommandExecutor {
 						p.addLine(new StringBuilder("Total times: ").append(ChatColor.GREEN).append(t.getTotalTimes()).toString());
 						p.addLine(new StringBuilder("Remaining times: ").append(ChatColor.GREEN).append(t.getRemainingTimes()).toString());
 						p.addLine(new StringBuilder("Reset time: ").append(ChatColor.GREEN).append(t.getResetTime()).append(" seconds").toString());
+						p.addLine(new StringBuilder("").append(ChatColor.GOLD).append("Enter the command again to display the next page.").toString());
+
+						book.addPage(p);
+						
+						// third page
+						p = new Page();
+						
+						p.addLine(new StringBuilder(chatPrefix).append("Trigger information (").append(3).append("/").append(totalPages).append(")").toString());
+						p.addLine("------------------------");
 						p.addLine("Spawning:");
-						
+
 						StringBuilder list = new StringBuilder("  ");
+						final int n = Trigger.NUMBER_OF_CREATURE_TYPES;
 						
-						for (int i = 0; i < 13; i++) {
-							final CreatureType ct = Util.getMobNameById(i);
+						for (int i = 0; i < n ; i++) {
+							CreatureType ct = Util.getMobNameById(i);
 							int amount = t.getAmountOfMobType(ct);
 							
 							if (amount != 0) {
@@ -700,8 +712,8 @@ public final class MTCommands implements CommandExecutor {
 	}
 	
 	private void showTriggerIDs(Player sender) {
-		// reserved page indices: 6
-		final int reservedPageStartIndex = 6;
+		// reserved page indices: 20
+		final int reservedPageStartIndex = 20;
 		final int reservedPages = 1;
 		
 		final int bookID = 2;
@@ -753,8 +765,8 @@ public final class MTCommands implements CommandExecutor {
 	}
 	
 	private void showHelp(Player sender) {
-		// reserved page indices: 7-10
-		final int reservedPageStartIndex = 7;
+		// reserved page indices: 30-33
+		final int reservedPageStartIndex = 30;
 		final int reservedPages = 4;
 		
 		final int bookID = 3;
