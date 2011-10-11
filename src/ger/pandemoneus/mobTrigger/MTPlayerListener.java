@@ -59,12 +59,12 @@ public final class MTPlayerListener extends PlayerListener {
 			final Action action = event.getAction();
 			final Block b = event.getClickedBlock();
 			final Location loc = b.getLocation();
-			final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
+			final TriggerCollection tc = plugin.getMTConfig().getTriggerCollection();
 			
 			if (playersInSelectionMode.contains(playerName)) {
 				if (action == Action.LEFT_CLICK_BLOCK || action == Action.RIGHT_CLICK_BLOCK) {
 					// check whether is wielding the selection tool for regions
-					if (p.getItemInHand().getTypeId() == plugin.getConfig().getSelectionItemId()) {	
+					if (p.getItemInHand().getTypeId() == plugin.getMTConfig().getSelectionItemId()) {	
 						event.setCancelled(true);
 						// player already selected first point of the cuboid, so this will set the second
 						if (selectedFirstPoint.containsKey(playerName)) {

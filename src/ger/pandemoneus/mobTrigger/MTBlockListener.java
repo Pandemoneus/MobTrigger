@@ -47,7 +47,7 @@ public final class MTBlockListener extends BlockListener {
 	public void onBlockRedstoneChange(BlockRedstoneEvent event) {
 		final Block b = event.getBlock();
 		final Location loc = b.getLocation();
-		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
+		final TriggerCollection tc = plugin.getMTConfig().getTriggerCollection();
 		
 		// only trigger when the current rises
 		if (Util.isValidType(b.getType()) && event.getNewCurrent() == REDSTONE_ON) {
@@ -65,7 +65,7 @@ public final class MTBlockListener extends BlockListener {
 		if (!event.isCancelled()) {
 			final Block b = event.getBlock();		
 			final Player p = event.getPlayer();
-			final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
+			final TriggerCollection tc = plugin.getMTConfig().getTriggerCollection();
 			
 			Object[] o = null;
 			
@@ -89,7 +89,7 @@ public final class MTBlockListener extends BlockListener {
 	}
 	
 	private Object[] getNearbyTriggerAndLocation(Block b) {
-		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
+		final TriggerCollection tc = plugin.getMTConfig().getTriggerCollection();
 		final Location loc = b.getLocation();
 		
 		final Block southBlock = b.getRelative(BlockFace.SOUTH);

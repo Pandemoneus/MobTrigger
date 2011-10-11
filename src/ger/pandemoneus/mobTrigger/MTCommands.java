@@ -254,7 +254,7 @@ public final class MTCommands implements CommandExecutor {
 		
 		if (!set.contains(sender.getName())) {
 			sender.sendMessage(new StringBuilder(chatPrefix).append("Selection mode: ").append(ChatColor.GREEN).append("ON").toString());
-			sender.sendMessage(new StringBuilder(chatPrefix).append("Selection tool: ").append(ChatColor.GREEN).append(Material.getMaterial(plugin.getConfig().getSelectionItemId()).toString()).toString());
+			sender.sendMessage(new StringBuilder(chatPrefix).append("Selection tool: ").append(ChatColor.GREEN).append(Material.getMaterial(plugin.getMTConfig().getSelectionItemId()).toString()).toString());
 			set.add(sender.getName());
 		} else {
 			plugin.getPlayerListener().playersInSelectionMode.remove(sender.getName());
@@ -263,8 +263,8 @@ public final class MTCommands implements CommandExecutor {
 	}
 	
 	private void saveCuboid(Player sender, String cuboidName) {
-		final YMLHelper cm = plugin.getConfig().getCuboidManager();
-		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
+		final YMLHelper cm = plugin.getMTConfig().getCuboidManager();
+		final TriggerCollection tc = plugin.getMTConfig().getTriggerCollection();
 		final HashMap<String, Cuboid> map = plugin.getPlayerListener().triggerCuboid;
 		
 		final String senderName = sender.getName();
@@ -299,7 +299,7 @@ public final class MTCommands implements CommandExecutor {
 	}
 	
 	private void infoCuboid(Player sender, String cuboidName) {
-		final YMLHelper cm = plugin.getConfig().getCuboidManager();
+		final YMLHelper cm = plugin.getMTConfig().getCuboidManager();
 		
 		if (cm.getMap(cuboidName) != null) {
 			final Cuboid c = Cuboid.load(cm.getMap(cuboidName));
@@ -315,8 +315,8 @@ public final class MTCommands implements CommandExecutor {
 	}
 	
 	private void createTrigger(Player sender, String triggerId, String cuboidName, String firstDelay, String selfTriggering, String selfTriggerDelay, String totalTimes, String resetTime) {
-		final YMLHelper cm = plugin.getConfig().getCuboidManager();
-		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
+		final YMLHelper cm = plugin.getMTConfig().getCuboidManager();
+		final TriggerCollection tc = plugin.getMTConfig().getTriggerCollection();
 		final MTPlayerListener pl = plugin.getPlayerListener();
 		
 		final String senderName = sender.getName();
@@ -386,7 +386,7 @@ public final class MTCommands implements CommandExecutor {
 	}
 	
 	private void linkTrigger(Player sender, String triggerId) {
-		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
+		final TriggerCollection tc = plugin.getMTConfig().getTriggerCollection();
 		final MTPlayerListener pl = plugin.getPlayerListener();
 		
 		final String senderName = sender.getName();
@@ -427,7 +427,7 @@ public final class MTCommands implements CommandExecutor {
 	}
 	
 	private void unlinkTrigger(Player sender) {
-		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
+		final TriggerCollection tc = plugin.getMTConfig().getTriggerCollection();
 		final MTPlayerListener pl = plugin.getPlayerListener();
 		
 		final String senderName = sender.getName();
@@ -453,7 +453,7 @@ public final class MTCommands implements CommandExecutor {
 	}
 	
 	private void resetTrigger(Player sender, String triggerId) {
-		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
+		final TriggerCollection tc = plugin.getMTConfig().getTriggerCollection();
 		
 		int id = -1;
 		
@@ -482,7 +482,7 @@ public final class MTCommands implements CommandExecutor {
 	private void setMobAmount(Player sender, String type, String amount) {
 		final MTPlayerListener pl = plugin.getPlayerListener();
 		final HashMap<String, Location> selectedTriggerMap = pl.selectedTriggerBlock;
-		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
+		final TriggerCollection tc = plugin.getMTConfig().getTriggerCollection();
 		
 		final String senderName = sender.getName();
 		
@@ -620,7 +620,7 @@ public final class MTCommands implements CommandExecutor {
 		
 		final MTPlayerListener pl = plugin.getPlayerListener();
 		final HashMap<String, Location> selectedTriggerMap = pl.selectedTriggerBlock;
-		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
+		final TriggerCollection tc = plugin.getMTConfig().getTriggerCollection();
 
 		if (selectedTriggerMap.containsKey(senderName)) {
 			final Location key = selectedTriggerMap.get(senderName);
@@ -720,7 +720,7 @@ public final class MTCommands implements CommandExecutor {
 		
 		final String senderName = sender.getName();
 		
-		final TriggerCollection tc = plugin.getConfig().getTriggerCollection();
+		final TriggerCollection tc = plugin.getMTConfig().getTriggerCollection();
 		final ArrayList<Trigger> list = tc.getAllTriggers();
 		
 		final ArrayList<Trigger> toDisplay = new ArrayList<Trigger>();

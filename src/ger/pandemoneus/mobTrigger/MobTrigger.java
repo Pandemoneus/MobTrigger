@@ -180,7 +180,7 @@ public class MobTrigger extends JavaPlugin {
 	 * 
 	 * @return the plug-in's configuration object
 	 */
-	public MTConfig getConfig() {
+	public MTConfig getMTConfig() {
 		return config;
 	}
 	
